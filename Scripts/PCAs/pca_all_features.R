@@ -67,41 +67,41 @@ load_full_data <- function(cancer, complete = FALSE){
   clinical_data <- clinical_data[clinical_ind, ]# now clinical data has ids match with complete data (cases)
   }
   ######################################################################
-  # Normalize the features in the data sets.
-  # Normalization is performed before imputation and we expect that the
-#   # data will still be normalized after imputation (before clustering).
-#   row_statistics <- function(cases){
-#     
-#     num_views <- length(cases)
-#     row_stats <- vector('list', num_views)
-#     
-#     for(v in 1:num_views){
-#       #calculate the row means and std deviations 
-#       row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-#       row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-#       constant_ind <- row_sd == 0
-#       row_sd[constant_ind] <- 1
-#       row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-#     }
-#     return(row_stats)
-#   }
-#   
-#   normalize_data <- function(data, stat){
-#     for(v in 1:length(data)) {
-#       data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-#       data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-#     }
-#     return(data)
-#   }
-#   
-#   if(complete){
-#     completeStat <- row_statistics(complete_data)
-#     complete_data <- normalize_data(complete_data, completeStat)
-#   }else{
-#   incompleteStat <- row_statistics(cases)
-#   cases <- normalize_data(cases, incompleteStat)
-#   
-#   }
+#   Normalize the features in the data sets.
+#   Normalization is performed before imputation and we expect that the
+  # data will still be normalized after imputation (before clustering).
+  row_statistics <- function(cases){
+    
+    num_views <- length(cases)
+    row_stats <- vector('list', num_views)
+    
+    for(v in 1:num_views){
+      #calculate the row means and std deviations 
+      row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+      row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+      constant_ind <- row_sd == 0
+      row_sd[constant_ind] <- 1
+      row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+    }
+    return(row_stats)
+  }
+  
+  normalize_data <- function(data, stat){
+    for(v in 1:length(data)) {
+      data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+      data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+    }
+    return(data)
+  }
+  
+  if(complete){
+    completeStat <- row_statistics(complete_data)
+    complete_data <- normalize_data(complete_data, completeStat)
+  }else{
+  incompleteStat <- row_statistics(cases)
+  cases <- normalize_data(cases, incompleteStat)
+  
+  }
    if(complete){
      return(list(first = complete_data, second = clinical_data))
 # 

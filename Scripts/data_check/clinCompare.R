@@ -184,77 +184,77 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
   # Select a subset of features which differ most between cases and
   # controls.
   
-  featureSubsetIndices <- function(cases, subsetSize=numFeat) {
-    numViews <- length(cases)
-    featureSubsetInd <- vector("list", numViews)
-    
-    for (v in 1:numViews) {
-      # Calculate the t-test p-value for each feature, grouped by cases
-      # and controls
-      numFeatures <- nrow(cases[[v]])
-      pval <- sapply(1:numFeatures,
-                     function(i) t.test(cases[[v]][i, ],
-                                        controls[[v]][i, ])$p.value)
-      
-      # Subset the data keeping the features with the smallest p-values
-      ind <- order(pval)
-      featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
-    }
-    
-    return(featureSubsetInd)
-  }
-  
-  subsetData <- function(data, ind) {
-    
-    for (v in 1:length(data)) {
-      data[[v]] <- data[[v]][ind[[v]], ]
-    }
-    
-    return(data)
-  }
-  
- if (complete){
-    completeInd <- featureSubsetIndices(completeData)
-    completeData <- subsetData(completeData, completeInd)
-    } else {
-    unionInd <- featureSubsetIndices(unionData)
-    unionData <- subsetData(unionData, unionInd)
-    }
-  
-  ####################################################################################
-#   Normalize the features in the data sets.
-#   Normalization is performed before imputation and we expect that the
-#   data will still be normalized after imputation (before clustering).
-    rowStatistics <- function(cases){
-      num_views <- length(cases)
-      row_stats <- vector('list', num_views)
-      
-      for(v in 1:num_views){
-        #calculate the row means and std deviations 
-        row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-        row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-        constant_ind <- row_sd == 0
-        row_sd[constant_ind] <- 1
-        row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-      }
-      return(row_stats)
-    }
-    
-    normalizeData <- function(data, stat){
-      for(v in 1:length(data)) {
-        data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-        data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-      }
-      return(data)
-    }
-    
-   if (complete) {
-      completeStat <- rowStatistics(completeData)
-      completeData <- normalizeData(completeData, completeStat)
-    } else {
-    unionStat <- rowStatistics(unionData)
-    unionData <- normalizeData(unionData, unionStat)
-    }
+#   featureSubsetIndices <- function(cases, subsetSize=numFeat) {
+#     numViews <- length(cases)
+#     featureSubsetInd <- vector("list", numViews)
+#     
+#     for (v in 1:numViews) {
+#       # Calculate the t-test p-value for each feature, grouped by cases
+#       # and controls
+#       numFeatures <- nrow(cases[[v]])
+#       pval <- sapply(1:numFeatures,
+#                      function(i) t.test(cases[[v]][i, ],
+#                                         controls[[v]][i, ])$p.value)
+#       
+#       # Subset the data keeping the features with the smallest p-values
+#       ind <- order(pval)
+#       featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
+#     }
+#     
+#     return(featureSubsetInd)
+#   }
+#   
+#   subsetData <- function(data, ind) {
+#     
+#     for (v in 1:length(data)) {
+#       data[[v]] <- data[[v]][ind[[v]], ]
+#     }
+#     
+#     return(data)
+#   }
+#   
+#  if (complete){
+#     completeInd <- featureSubsetIndices(completeData)
+#     completeData <- subsetData(completeData, completeInd)
+#     } else {
+#     unionInd <- featureSubsetIndices(unionData)
+#     unionData <- subsetData(unionData, unionInd)
+#     }
+# #   
+#   ####################################################################################
+# #   Normalize the features in the data sets.
+# #   Normalization is performed before imputation and we expect that the
+# #   data will still be normalized after imputation (before clustering).
+#     rowStatistics <- function(cases){
+#       num_views <- length(cases)
+#       row_stats <- vector('list', num_views)
+#       
+#       for(v in 1:num_views){
+#         #calculate the row means and std deviations 
+#         row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+#         row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+#         constant_ind <- row_sd == 0
+#         row_sd[constant_ind] <- 1
+#         row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+#       }
+#       return(row_stats)
+#     }
+#     
+#     normalizeData <- function(data, stat){
+#       for(v in 1:length(data)) {
+#         data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+#         data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+#       }
+#       return(data)
+#     }
+#     
+#    if (complete) {
+#       completeStat <- rowStatistics(completeData)
+#       completeData <- normalizeData(completeData, completeStat)
+#     } else {
+#     unionStat <- rowStatistics(unionData)
+#     unionData <- normalizeData(unionData, unionStat)
+#     }
   
  if (complete) {
     return(list(first = completeData, second = clinicalData))
@@ -519,3 +519,97 @@ Difference <- function(column, title) {
 Difference(column = 'days_to_death', title = 'Difference in days_to_death between complete and union')
 Difference(column = 'days_to_last_followup', title = 'Difference in days_to_last_followup between complete and union')
 Difference(column = 'survTime', title = 'Difference in Survial Time between complete and union')
+
+#############################################################################################
+# Run PCA on complete data without combat and with combat on KIRC
+library(sva)
+
+# transform patient IDs to the clinical ID format 
+transformIDFormat <- function(x){
+  x <- substr(x, 1, 12)
+  x <- gsub('.', '-', x, fixed = TRUE)
+  x <- tolower(x)
+  
+  return(x)
+}
+
+runCombat <- function(completeData, clinicalData, numViews = 3) {
+  
+  for (i in 1:numViews) {
+    # Subset clinical data and completeData by clinicalData
+    completeIDs <- colnames(completeData[[1]])
+    completeIDs <- transformIDFormat(completeIDs)
+    clinicalData <- clinicalData[rowSums(is.na(clinicalData)) < ncol(clinicalData),]
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    completeInd <- match(clinicalIDs, completeIDs)
+    temp.completeData <- completeData[[i]]
+    temp.completeData <- temp.completeData[,completeInd]
+    temp.2.completeData <- temp.completeData[rowSums(temp.completeData) != 0,]
+    temp.modcombat <- model.matrix(~1, data = clinicalData)
+    temp.batch <- clinicalData$gender
+    temp_combat = ComBat(dat=temp.2.completeData, batch=temp.batch, mod=temp.modcombat, par.prior=TRUE, prior.plots=FALSE)
+    completeData[[i]] <- temp_combat
+  }
+  return(completeData)
+}
+
+dataMerge <- function(data, clinical){
+  data <- as.data.frame(t(data))
+  data <- cbind('id' = row.names(data), data)
+  data$id <- transformIDFormat(data$id)
+  row.names(data) <- NULL
+  names(clinical)[2] <- 'id'
+  data <- left_join(data, clinical, by = 'id')
+  data$days_to_death[is.na(as.numeric(data$days_to_death))] <- max(clinical$days_to_death, na.rm = T)
+  return(data)
+}
+
+pca <- function(data){
+  data <- data[!is.na(data$days_to_death),]
+  data <- data[data$days_to_death > 0,]
+  data_length <- (ncol(data)-8) 
+  pca <- prcomp(data[,2:data_length])
+  return(pca)
+}
+
+# get gene info
+KIRCCompleteGene <- KIRCComplete[[1]]
+
+# run combat on KircCompleteGene
+KircCombat <- runCombat(KIRCCompleteGene, clinicalDataCompleteKIRC)
+
+# get methylation from gene info and combat
+KircMethyl <- KIRCCompleteGene[[1]]
+KircMethylCombat <- KircCombat[[1]]
+
+# Merge both with clinical data
+KircMethylFull <- dataMerge(KircMethyl, clinicalDataCompleteKIRC)
+KircMethylCombatFull <- dataMerge(KircMethylCombat, clinicalDataCompleteKIRC)
+
+# run pca on both data sets 
+KircMethylFullPca <- pca(KircMethylFull)
+KircMethylCombatPca <- pca(KircMethylCombatFull)
+
+# Plot PCA
+pcaPlot <- function(pca, name){
+#   min <- min(min(pca$x[,1]), pca$x[,2])
+#   max <- max(max(pca$x[,1]), pca$x[,2])
+  plot(pca$x[,1], 
+       pca$x[,2],
+       xlab = 'PCA 1',
+       ylab = 'PCA 2',
+       cex = 1,
+       main = name,
+       pch = 16
+#        xlim= c(min, max),
+#        ylim = c(min, max)
+  )
+  abline(v = c(0,0),
+         h = c(0,0))
+  
+}
+
+pcaPlot(KircMethylFullPca, name = 'PCA')
+pcaPlot(KircMethylCombatPca, name = 'PCA')
+
+#########################################################################################

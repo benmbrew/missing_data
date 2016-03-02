@@ -269,21 +269,15 @@ kirc_mrna_merge_full <- dataMerge(kirc_mrna_full, temp)
 
 # run pca
 pca <- function(data){
-  #data <- data[!is.na(data$days_to_death),]
-  # data <- data[data$days_to_death > 0,]
+  data <- data[!is.na(data$days_to_death),]
+  data <- data[data$days_to_death > 0,]
   data_length <- (ncol(data)-6) 
   pca <- prcomp(data[,2:data_length])
   return(pca)
 }
 
-data_length <- (ncol(kirc_batch)-6) 
-kirc_batch[, 2:data_length] <- scale(kirc_batch[, 2:data_length])
-
 batch_data_pca <- pca(kirc_batch)
-kirc_batch$col <- ifelse(grepl('A', kirc_batch$batch), 'green', 
-                         ifelse(grepl('14', kirc_batch$batch), 'blue',
-                                ifelse(grepl('15', kirc_batch$batch), 'black',
-                                       ifelse(grepl('16', kirc_batch$batch), 'grey','yellow'))))
+
 
 # plot batch effect 
 pcaPlot <- function(pca, data,name){

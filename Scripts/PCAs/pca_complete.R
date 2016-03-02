@@ -69,7 +69,7 @@ clinical_ind <- match(complete_ids, clinical_ids) # returns a vector of position
 # be length of complete_ids with position of clinical ids where they match.
 clinical_data <- clinical_data[clinical_ind, ]# now clinical data has ids match with complete data (cases)
 
-######################################################################
+#####################################################################
 # Select a subset of features which differ most between cases and
 # controls.
 num_feat <- 2000
@@ -106,33 +106,33 @@ complete_data <- subset_data(complete_data, complete_ind)
 ######################################################################
 # Normalize the features in the data sets.
 # Normalization is performed before imputation and we expect that the
-# data will still be normalized after imputation (before clustering).
-row_statistics <- function(cases){
-  
-  num_views <- length(cases)
-  row_stats <- vector('list', num_views)
-  
-  for(v in 1:num_views){
-    #calculate the row means and std deviations 
-    row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-    row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-    constant_ind <- row_sd == 0
-    row_sd[constant_ind] <- 1
-    row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-  }
-  return(row_stats)
-}
-
-normalize_data <- function(data, stat){
-  for(v in 1:length(data)) {
-    data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-    data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-  }
-  return(data)
-}
-
-complete_stat <- row_statistics(complete_data)
-complete_data <- normalize_data(complete_data, complete_stat)
+# # data will still be normalized after imputation (before clustering).
+# row_statistics <- function(cases){
+#   
+#   num_views <- length(cases)
+#   row_stats <- vector('list', num_views)
+#   
+#   for(v in 1:num_views){
+#     #calculate the row means and std deviations 
+#     row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+#     row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+#     constant_ind <- row_sd == 0
+#     row_sd[constant_ind] <- 1
+#     row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+#   }
+#   return(row_stats)
+# }
+# 
+# normalize_data <- function(data, stat){
+#   for(v in 1:length(data)) {
+#     data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+#     data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+#   }
+#   return(data)
+# }
+# 
+# complete_stat <- row_statistics(complete_data)
+# complete_data <- normalize_data(complete_data, complete_stat)
 return(list(first = complete_data, second = clinical_data))
 
 }
@@ -263,8 +263,8 @@ pcaPlot <- function(pca, data, name){
 #     sd(data$days_to_death, na.rm = T)
   min <- min(min(pca$x[,1]), pca$x[,2])
   max <- max(max(pca$x[,1]), pca$x[,2])
-  plot(pca$x[,4], 
-       pca$x[,5],
+  plot(pca$x[,1], 
+       pca$x[,2],
        xlab = 'PCA 1',
        ylab = 'PCA 2',
        cex = 1,
