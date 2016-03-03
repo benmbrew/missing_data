@@ -184,77 +184,77 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
   # Select a subset of features which differ most between cases and
   # controls.
   
-#   featureSubsetIndices <- function(cases, subsetSize=numFeat) {
-#     numViews <- length(cases)
-#     featureSubsetInd <- vector("list", numViews)
-#     
-#     for (v in 1:numViews) {
-#       # Calculate the t-test p-value for each feature, grouped by cases
-#       # and controls
-#       numFeatures <- nrow(cases[[v]])
-#       pval <- sapply(1:numFeatures,
-#                      function(i) t.test(cases[[v]][i, ],
-#                                         controls[[v]][i, ])$p.value)
-#       
-#       # Subset the data keeping the features with the smallest p-values
-#       ind <- order(pval)
-#       featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
-#     }
-#     
-#     return(featureSubsetInd)
-#   }
+  featureSubsetIndices <- function(cases, subsetSize=numFeat) {
+    numViews <- length(cases)
+    featureSubsetInd <- vector("list", numViews)
+    
+    for (v in 1:numViews) {
+      # Calculate the t-test p-value for each feature, grouped by cases
+      # and controls
+      numFeatures <- nrow(cases[[v]])
+      pval <- sapply(1:numFeatures,
+                     function(i) t.test(cases[[v]][i, ],
+                                        controls[[v]][i, ])$p.value)
+      
+      # Subset the data keeping the features with the smallest p-values
+      ind <- order(pval)
+      featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
+    }
+    
+    return(featureSubsetInd)
+  }
+  
+  subsetData <- function(data, ind) {
+    
+    for (v in 1:length(data)) {
+      data[[v]] <- data[[v]][ind[[v]], ]
+    }
+    
+    return(data)
+  }
+  
+ if (complete){
+    completeInd <- featureSubsetIndices(completeData)
+    completeData <- subsetData(completeData, completeInd)
+    } else {
+    unionInd <- featureSubsetIndices(unionData)
+    unionData <- subsetData(unionData, unionInd)
+    }
 #   
-#   subsetData <- function(data, ind) {
-#     
-#     for (v in 1:length(data)) {
-#       data[[v]] <- data[[v]][ind[[v]], ]
-#     }
-#     
-#     return(data)
-#   }
-#   
-#  if (complete){
-#     completeInd <- featureSubsetIndices(completeData)
-#     completeData <- subsetData(completeData, completeInd)
-#     } else {
-#     unionInd <- featureSubsetIndices(unionData)
-#     unionData <- subsetData(unionData, unionInd)
-#     }
-# #   
 #   ####################################################################################
 # #   Normalize the features in the data sets.
 # #   Normalization is performed before imputation and we expect that the
 # #   data will still be normalized after imputation (before clustering).
-#     rowStatistics <- function(cases){
-#       num_views <- length(cases)
-#       row_stats <- vector('list', num_views)
-#       
-#       for(v in 1:num_views){
-#         #calculate the row means and std deviations 
-#         row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-#         row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-#         constant_ind <- row_sd == 0
-#         row_sd[constant_ind] <- 1
-#         row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-#       }
-#       return(row_stats)
-#     }
-#     
-#     normalizeData <- function(data, stat){
-#       for(v in 1:length(data)) {
-#         data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-#         data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-#       }
-#       return(data)
-#     }
-#     
-#    if (complete) {
-#       completeStat <- rowStatistics(completeData)
-#       completeData <- normalizeData(completeData, completeStat)
-#     } else {
-#     unionStat <- rowStatistics(unionData)
-#     unionData <- normalizeData(unionData, unionStat)
-#     }
+    rowStatistics <- function(cases){
+      num_views <- length(cases)
+      row_stats <- vector('list', num_views)
+      
+      for(v in 1:num_views){
+        #calculate the row means and std deviations 
+        row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+        row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+        constant_ind <- row_sd == 0
+        row_sd[constant_ind] <- 1
+        row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+      }
+      return(row_stats)
+    }
+    
+    normalizeData <- function(data, stat){
+      for(v in 1:length(data)) {
+        data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+        data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+      }
+      return(data)
+    }
+    
+   if (complete) {
+      completeStat <- rowStatistics(completeData)
+      completeData <- normalizeData(completeData, completeStat)
+    } else {
+    unionStat <- rowStatistics(unionData)
+    unionData <- normalizeData(unionData, unionStat)
+    }
   
  if (complete) {
     return(list(first = completeData, second = clinicalData))
@@ -345,9 +345,8 @@ dim(clinicalDataCompleteLUAD) # 430
 #########################################################################################
 # Barplots of all vital_status and gender (with NAs) for complete data (clinicalDataComplete) and not complete (clin)
 
-
 # group by vital status and return a bargraph of alive, dead, and NAs percentage for complete and left out clinical ids.
-groupByVital <- function(data) {
+groupByVital <- function(data, title) {
   
   temp <- data %>%
     group_by(vital_status) %>%
@@ -355,22 +354,22 @@ groupByVital <- function(data) {
   
   temp$percent <- (temp$counts/nrow(data))*100
   
-  ggplot(data = temp, aes(vital_status, percent)) + geom_bar(stat = 'identity')
+  ggplot(data = temp, aes(vital_status, percent)) + geom_bar(stat = 'identity') + ggtitle(title)
   
 }
 
-groupByVital(clinicalDataCompleteBRCA)
-groupByVital(clinBrca)
-groupByVital(clinicalDataCompleteKIRC)
-groupByVital(clinKirc)
-groupByVital(clinicalDataCompleteLIHC)
-groupByVital(clinLihc)
-groupByVital(clinicalDataCompleteLUAD)
-groupByVital(clinLuad)
+groupByVital(clinicalDataCompleteBRCA, title = 'BRCA Complete')
+groupByVital(clinBrca, title = 'BRCA Not in Intersection')
+groupByVital(clinicalDataCompleteKIRC, title = 'KIRC Complete')
+groupByVital(clinKirc, title = 'KIRC Not in Intersection')
+groupByVital(clinicalDataCompleteLIHC, title = 'LIHC Complete')
+groupByVital(clinLihc, title = 'LIHC Not in Intersection')
+groupByVital(clinicalDataCompleteLUAD, title = 'LUAD Complete')
+groupByVital(clinLuad, title = 'LUAD Not in Intersection')
 
 
 # group by gender and return a bargraph of alive, dead, and NAs percentage for complete and left out clinical ids.
-groupByGender <- function(data) {
+groupByGender <- function(data, title) {
   
   temp <- data %>%
     group_by(gender) %>%
@@ -378,18 +377,18 @@ groupByGender <- function(data) {
   
   temp$percent <- (temp$counts/nrow(data))*100
   
-  ggplot(data = temp, aes(gender, percent)) + geom_bar(stat = 'identity')
+  ggplot(data = temp, aes(gender, percent)) + geom_bar(stat = 'identity') + ggtitle(title)
   
 }
 
-groupByGender(clinicalDataCompleteBRCA)
-groupByGender(clinBrca)
-groupByGender(clinicalDataCompleteKIRC)
-groupByGender(clinKirc)
-groupByGender(clinicalDataCompleteLIHC)
-groupByGender(clinLihc)
-groupByGender(clinicalDataCompleteLUAD)
-groupByGender(clinLuad)
+groupByGender(clinicalDataCompleteBRCA, title = 'BRCA Complete')
+groupByGender(clinBrca, title = 'BRCA Not in Intersection')
+groupByGender(clinicalDataCompleteKIRC, title = 'KIRC Complete')
+groupByGender(clinKirc, title = 'KIRC Not in Intersection')
+groupByGender(clinicalDataCompleteLIHC, title = 'LIHC Complete')
+groupByGender(clinLihc, title = 'LIHC Not in IntersectionUnion')
+groupByGender(clinicalDataCompleteLUAD, title = 'LUAD Union')
+groupByGender(clinLuad, title = 'LUAD Not in Intersection')
 
 ##############################################################################################
 # Histograms of days_to_death 
@@ -404,19 +403,19 @@ daysToDeath <- function(data, title, column) {
 
 # BRCA
 daysToDeath(clinicalDataCompleteBRCA, title = 'BRCA Complete', column = 'Days To Death')
-daysToDeath(clinBrca, title = 'BRCA Union', column = 'Days To Death')
+daysToDeath(clinBrca, title = 'BRCA Not in Intersection', column = 'Days To Death')
 
 # KIRC
 daysToDeath(clinicalDataCompleteKIRC, title = 'KIRC Complete', column = 'Days To Death')
-daysToDeath(clinKirc, title = 'KIRC Union', column = 'Days To Death')
+daysToDeath(clinKirc, title = 'KIRC Not in Intersection', column = 'Days To Death')
 
 # LIHC
 daysToDeath(clinicalDataCompleteLIHC, title = 'LIHC Complete', column = 'Days To Death')
-daysToDeath(clinLihc, title = 'LIHC Union', column = 'Days To Death')
+daysToDeath(clinLihc, title = 'LIHC Not in Intersection', column = 'Days To Death')
 
 #LUAD
 daysToDeath(clinicalDataCompleteLUAD, title = 'LUAD Complete', column = 'Days To Death')
-daysToDeath(clinLuad, title = 'LUAD Union', column = 'Days To Death')
+daysToDeath(clinLuad, title = 'LUAD Not in Intersection', column = 'Days To Death')
 
 
 ######################################################################################################
@@ -432,19 +431,19 @@ daysToLastFollowUp <- function(data, title, column) {
 }
 # BRCA
 daysToLastFollowUp(clinicalDataCompleteBRCA, title = 'BRCA Complete', column = 'Days To Last Follow Up')
-daysToLastFollowUp(clinBrca, title = 'BRCA Union', column = 'Days To Last Follow Up')
+daysToLastFollowUp(clinBrca, title = 'BRCA Not in Intersection', column = 'Days To Last Follow Up')
 
 # KIRC
 daysToLastFollowUp(clinicalDataCompleteKIRC, title = 'KIRC Complete', column = 'Days To Last Follow Up')
-daysToLastFollowUp(clinKirc, title = 'KIRC Union', column = 'Days To Last Follow Up')
+daysToLastFollowUp(clinKirc, title = 'KIRC Not in Intersection', column = 'Days To Last Follow Up')
 
 # LIHC
 daysToLastFollowUp(clinicalDataCompleteLIHC, title = 'LIHC Complete', column = 'Days To Last Follow Up')
-daysToLastFollowUp(clinLihc, title = 'LIHC Union', column = 'Days To Last Follow Up')
+daysToLastFollowUp(clinLihc, title = 'LIHC Not in Intersection', column = 'Days To Last Follow Up')
 
 #LUAD
 daysToLastFollowUp(clinicalDataCompleteLUAD, title = 'LUAD Complete', column = 'Days To Last Follow Up')
-daysToLastFollowUp(clinLuad, title = 'LUAD Union', column = 'Days To Last Follow Up')
+daysToLastFollowUp(clinLuad, title = 'LUAD Not in Intersection', column = 'Days To Last Follow Up')
 
 
 ##########################################################################################################
@@ -467,17 +466,17 @@ survObject <- function(data, title) {
   
 }
 
-survObject(clinicalDataCompleteBRCA, 'BRCA')
-survObject(clinBrca, 'BRCA')
+survObject(clinicalDataCompleteBRCA, 'BRCA Complete')
+survObject(clinBrca, 'BRCA Not in Intersection')
 
-survObject(clinicalDataCompleteKIRC, 'KIRC')
-survObject(clinKirc, 'KIRC')
+survObject(clinicalDataCompleteKIRC, 'KIRC Complete')
+survObject(clinKirc, 'KIRC Not in Intersection')
 
 survObject(clinicalDataCompleteLIHC, 'LIHC')
-survObject(clinLihc, 'LIHC')
+survObject(clinLihc, 'LIHC Not in Intersection')
 
 survObject(clinicalDataCompleteLUAD, 'LUAD')
-survObject(clinLuad, 'LUAD')
+survObject(clinLuad, 'LUAD Not in Intersection')
 ###########################################################################################
 # Create a function to add survTime to clinicalDataComplete.... and clin....
 addSurv <- function(data) {
@@ -504,11 +503,41 @@ clinLuad <- addSurv(clinLuad)
 # Look at relative difference between percentiles. 
 # percent difference for each 
 Difference <- function(column, title) {
+  if(column == 'vital_status'){
+    
+    temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$vital_status == 'alive'),])/
+                              nrow(clinicalDataCompleteBRCA))*100 - 
+                              (nrow(clinBrca[which(clinBrca$vital_status == 'alive'),])/nrow(clinBrca))*100, 2)
+    temp.diff_KIRC <- round((nrow(clinicalDataCompleteKIRC[which(clinicalDataCompleteKIRC$vital_status == 'alive'),])/
+                              nrow(clinicalDataCompleteKIRC))*100 - 
+                              (nrow(clinKirc[which(clinKirc$vital_status == 'alive'),])/nrow(clinKirc))*100, 2)
+    temp.diff_LIHC <- round((nrow(clinicalDataCompleteLIHC[which(clinicalDataCompleteLIHC$vital_status == 'alive'),])/
+                               nrow(clinicalDataCompleteLIHC))*100 - 
+                              (nrow(clinLihc[which(clinLihc$vital_status == 'alive'),])/nrow(clinLihc))*100, 2)
+    temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$vital_status == 'alive'),])/
+                               nrow(clinicalDataCompleteLUAD))*100 - 
+                              (nrow(clinLuad[which(clinLuad$vital_status == 'alive'),])/nrow(clinLuad))*100, 2) 
   
+  } else if (column == 'gender') {
+    temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$gender == 'female'),])/
+                               nrow(clinicalDataCompleteBRCA))*100 - 
+                              (nrow(clinBrca[which(clinBrca$gender == 'female'),])/nrow(clinBrca))*100, 2)
+    temp.diff_KIRC <- round((nrow(clinicalDataCompleteKIRC[which(clinicalDataCompleteKIRC$gender == 'female'),])/
+                               nrow(clinicalDataCompleteKIRC))*100 - 
+                              (nrow(clinKirc[which(clinKirc$gender == 'female'),])/nrow(clinKirc))*100, 2)
+    temp.diff_LIHC <- round((nrow(clinicalDataCompleteLIHC[which(clinicalDataCompleteLIHC$gender == 'female'),])/
+                               nrow(clinicalDataCompleteLIHC))*100 - 
+                              (nrow(clinLihc[which(clinLihc$gender == 'female'),])/nrow(clinLihc))*100, 2)
+    temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$gender == 'female'),])/
+                               nrow(clinicalDataCompleteLUAD))*100 - 
+                              (nrow(clinLuad[which(clinLuad$gender == 'female'),])/nrow(clinLuad))*100, 2)
+  
+  } else {
   temp.diff_BRCA <- mean(clinicalDataCompleteBRCA[, column], na.rm= T) - mean(clinBrca[, column], na.rm= T)
   temp.diff_KIRC <- mean(clinicalDataCompleteKIRC[, column], na.rm= T) - mean(clinKirc[, column], na.rm= T)
   temp.diff_LIHC <- mean(clinicalDataCompleteLIHC[, column], na.rm= T) - mean(clinLihc[, column], na.rm= T)
   temp.diff_LUAD <- mean(clinicalDataCompleteLUAD[, column], na.rm= T) - mean(clinLuad[, column], na.rm= T)
+  }
   
   temp <- data.frame(x = c('BRCA', 'KIRC', 'LIHC', 'LUAD'), y = c(temp.diff_BRCA, temp.diff_KIRC, temp.diff_LIHC, temp.diff_LUAD))
   
@@ -516,100 +545,103 @@ Difference <- function(column, title) {
 
 }
 
-Difference(column = 'days_to_death', title = 'Difference in days_to_death between complete and union')
-Difference(column = 'days_to_last_followup', title = 'Difference in days_to_last_followup between complete and union')
-Difference(column = 'survTime', title = 'Difference in Survial Time between complete and union')
+Difference(column = 'days_to_death', title = 'Difference in days_to_death between complete and not complete')
+Difference(column = 'days_to_last_followup', title = 'Difference in days_to_last_followup between complete and not complete')
+Difference(column = 'survTime', title = 'Difference in Survial Time between complete and not complete')
+Difference(column = 'vital_status', title = 'Difference in Percent Alive between complete and not complete')
+Difference(column = 'gender', title = 'Difference in Percent Female between complete and not complete')
+
 
 #############################################################################################
-# Run PCA on complete data without combat and with combat on KIRC
-library(sva)
-
-# transform patient IDs to the clinical ID format 
-transformIDFormat <- function(x){
-  x <- substr(x, 1, 12)
-  x <- gsub('.', '-', x, fixed = TRUE)
-  x <- tolower(x)
-  
-  return(x)
-}
-
-runCombat <- function(completeData, clinicalData, numViews = 3) {
-  
-  for (i in 1:numViews) {
-    # Subset clinical data and completeData by clinicalData
-    completeIDs <- colnames(completeData[[1]])
-    completeIDs <- transformIDFormat(completeIDs)
-    clinicalData <- clinicalData[rowSums(is.na(clinicalData)) < ncol(clinicalData),]
-    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
-    completeInd <- match(clinicalIDs, completeIDs)
-    temp.completeData <- completeData[[i]]
-    temp.completeData <- temp.completeData[,completeInd]
-    temp.2.completeData <- temp.completeData[rowSums(temp.completeData) != 0,]
-    temp.modcombat <- model.matrix(~1, data = clinicalData)
-    temp.batch <- clinicalData$gender
-    temp_combat = ComBat(dat=temp.2.completeData, batch=temp.batch, mod=temp.modcombat, par.prior=TRUE, prior.plots=FALSE)
-    completeData[[i]] <- temp_combat
-  }
-  return(completeData)
-}
-
-dataMerge <- function(data, clinical){
-  data <- as.data.frame(t(data))
-  data <- cbind('id' = row.names(data), data)
-  data$id <- transformIDFormat(data$id)
-  row.names(data) <- NULL
-  names(clinical)[2] <- 'id'
-  data <- left_join(data, clinical, by = 'id')
-  data$days_to_death[is.na(as.numeric(data$days_to_death))] <- max(clinical$days_to_death, na.rm = T)
-  return(data)
-}
-
-pca <- function(data){
-  data <- data[!is.na(data$days_to_death),]
-  data <- data[data$days_to_death > 0,]
-  data_length <- (ncol(data)-8) 
-  pca <- prcomp(data[,2:data_length])
-  return(pca)
-}
-
-# get gene info
-KIRCCompleteGene <- KIRCComplete[[1]]
-
-# run combat on KircCompleteGene
-KircCombat <- runCombat(KIRCCompleteGene, clinicalDataCompleteKIRC)
-
-# get methylation from gene info and combat
-KircMethyl <- KIRCCompleteGene[[1]]
-KircMethylCombat <- KircCombat[[1]]
-
-# Merge both with clinical data
-KircMethylFull <- dataMerge(KircMethyl, clinicalDataCompleteKIRC)
-KircMethylCombatFull <- dataMerge(KircMethylCombat, clinicalDataCompleteKIRC)
-
-# run pca on both data sets 
-KircMethylFullPca <- pca(KircMethylFull)
-KircMethylCombatPca <- pca(KircMethylCombatFull)
-
-# Plot PCA
-pcaPlot <- function(pca, name){
-#   min <- min(min(pca$x[,1]), pca$x[,2])
-#   max <- max(max(pca$x[,1]), pca$x[,2])
-  plot(pca$x[,1], 
-       pca$x[,2],
-       xlab = 'PCA 1',
-       ylab = 'PCA 2',
-       cex = 1,
-       main = name,
-       pch = 16
-#        xlim= c(min, max),
-#        ylim = c(min, max)
-  )
-  abline(v = c(0,0),
-         h = c(0,0))
-  
-}
-
-pcaPlot(KircMethylFullPca, name = 'PCA')
-pcaPlot(KircMethylCombatPca, name = 'PCA')
-
-#########################################################################################
+# # Run PCA on complete data without combat and with combat on KIRC
+# library(sva)
+# 
+# # transform patient IDs to the clinical ID format 
+# transformIDFormat <- function(x){
+#   x <- substr(x, 1, 12)
+#   x <- gsub('.', '-', x, fixed = TRUE)
+#   x <- tolower(x)
+#   
+#   return(x)
+# }
+# 
+# runCombat <- function(completeData, clinicalData, numViews = 3) {
+#   
+#   for (i in 1:numViews) {
+#     # Subset clinical data and completeData by clinicalData
+#     completeIDs <- colnames(completeData[[1]])
+#     completeIDs <- transformIDFormat(completeIDs)
+#     clinicalData <- clinicalData[rowSums(is.na(clinicalData)) < ncol(clinicalData),]
+#     clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+#     completeInd <- match(clinicalIDs, completeIDs)
+#     temp.completeData <- completeData[[i]]
+#     temp.completeData <- temp.completeData[,completeInd]
+#     temp.2.completeData <- temp.completeData[rowSums(temp.completeData) != 0,]
+#     temp.modcombat <- model.matrix(~1, data = clinicalData)
+#     temp.batch <- clinicalData$gender
+#     temp_combat = ComBat(dat=temp.2.completeData, batch=temp.batch, mod=temp.modcombat, par.prior=TRUE, prior.plots=FALSE)
+#     completeData[[i]] <- temp_combat
+#   }
+#   return(completeData)
+# }
+# 
+# dataMerge <- function(data, clinical){
+#   data <- as.data.frame(t(data))
+#   data <- cbind('id' = row.names(data), data)
+#   data$id <- transformIDFormat(data$id)
+#   row.names(data) <- NULL
+#   names(clinical)[2] <- 'id'
+#   data <- left_join(data, clinical, by = 'id')
+#   data$days_to_death[is.na(as.numeric(data$days_to_death))] <- max(clinical$days_to_death, na.rm = T)
+#   return(data)
+# }
+# 
+# pca <- function(data){
+#   data <- data[!is.na(data$days_to_death),]
+#   data <- data[data$days_to_death > 0,]
+#   data_length <- (ncol(data)-8) 
+#   pca <- prcomp(data[,2:data_length])
+#   return(pca)
+# }
+# 
+# # get gene info
+# KIRCCompleteGene <- KIRCComplete[[1]]
+# 
+# # run combat on KircCompleteGene
+# KircCombat <- runCombat(KIRCCompleteGene, clinicalDataCompleteKIRC)
+# 
+# # get methylation from gene info and combat
+# KircMethyl <- KIRCCompleteGene[[1]]
+# KircMethylCombat <- KircCombat[[1]]
+# 
+# # Merge both with clinical data
+# KircMethylFull <- dataMerge(KircMethyl, clinicalDataCompleteKIRC)
+# KircMethylCombatFull <- dataMerge(KircMethylCombat, clinicalDataCompleteKIRC)
+# 
+# # run pca on both data sets 
+# KircMethylFullPca <- pca(KircMethylFull)
+# KircMethylCombatPca <- pca(KircMethylCombatFull)
+# 
+# # Plot PCA
+# pcaPlot <- function(pca, name){
+# #   min <- min(min(pca$x[,1]), pca$x[,2])
+# #   max <- max(max(pca$x[,1]), pca$x[,2])
+#   plot(pca$x[,1], 
+#        pca$x[,2],
+#        xlab = 'PCA 1',
+#        ylab = 'PCA 2',
+#        cex = 1,
+#        main = name,
+#        pch = 16
+# #        xlim= c(min, max),
+# #        ylim = c(min, max)
+#   )
+#   abline(v = c(0,0),
+#          h = c(0,0))
+#   
+# }
+# 
+# pcaPlot(KircMethylFullPca, name = 'PCA')
+# pcaPlot(KircMethylCombatPca, name = 'PCA')
+# 
+# #########################################################################################
