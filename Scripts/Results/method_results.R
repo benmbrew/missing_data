@@ -3,6 +3,7 @@
 library(ggplot2)
 library(reshape2)
 library(dplyr)
+source(paste0(results_folder, '/Lib/helpers.R'))
 ################################################################################################
 # Initialize folders, 
 home_folder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
@@ -14,6 +15,8 @@ results_folder <- paste(project_folder, 'Scripts/06_Results', sep = '/')
 # Load data
 scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
+scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
+
 
 scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatOrig <- read.csv(paste0(results_folder, '/scoresCombatOrig.csv'))
@@ -27,6 +30,8 @@ scoresNormal$method <- interaction(scoresNormal$cluster,
                                    scoresNormal$impute, drop = TRUE)
 scoresNormalOrig$method <- interaction(scoresNormalOrig$cluster,
                                    scoresNormalOrig$impute, drop = TRUE)
+scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
+                                       scoresNormalOrigClust$impute, drop = TRUE)
 
 scoresCombat$method <- interaction(scoresCombat$cluster,
                                    scoresCombat$impute, drop = TRUE)
@@ -46,13 +51,12 @@ scoresGenderFemale <- scoresGender[scoresGender$gender == 2,]
 scoresGenderOrigMale <- scoresGenderOrig[scoresGenderOrig$gender == 1,]
 scoresGenderOrigFemale <- scoresGenderOrig[scoresGenderOrig$gender == 2,]
 
-
-
-
 ###################################################################################################
 # Drop acc and nmi from original data, as it's not needed for a evaluation
 scoresNormalOrig$acc <- NULL
 scoresNormalOrig$nmi <- NULL
+scoresNormalOrigClust$acc <- NULL
+scoresNormalOrigClust$nmi <- NULL
 scoresCombatOrig$acc <- NULL
 scoresCombatOrig$nmi <- NULL
 scoresGenderOrig$acc <- NULL
@@ -71,7 +75,7 @@ groupbyMethod <- function(data, orig = FALSE, title) {
       
       temp_melt <- melt(temp, id.vars = c('method'))
       ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title)
+         xlab('Method') + ggtitle(title) + theme_538_bar
       
   } else {
     
@@ -85,13 +89,15 @@ groupbyMethod <- function(data, orig = FALSE, title) {
     temp_melt <- melt(temp, id.vars = c('method'))
     
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title)
+     xlab('Method') + ggtitle(title) + theme_538_bar
   }
 }
 
 
 groupbyMethod(scoresNormal, title = 'Complete Data')
 groupbyMethod(scoresNormalOrig, orig = TRUE, title = 'Original Data')
+groupbyMethod(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
+
 
 groupbyMethod(scoresCombat, title = 'Complete Data with Combat')
 groupbyMethod(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
@@ -104,8 +110,6 @@ groupbyMethod(scoresGenderOrigFemale, orig = TRUE, title = 'Original Data with F
 
 ##################################################################################################
 # Group by cancer and method and mean of evaluation. 
-
-
 groupbyCancer <- function(cancer, data, orig = FALSE, title) {
   
   temp_data <- data[data$cancer == cancer,]
@@ -135,25 +139,29 @@ groupbyCancer <- function(cancer, data, orig = FALSE, title) {
   }
 }
 
-groupbyCancer(cancer = 1, scoresNormal, title = 'Complete Data')
-groupbyCancer(cancer = 2, scoresNormal, title = 'Complete Data')
-groupbyCancer(cancer = 3, scoresNormal, title = 'Complete Data')
-groupbyCancer(cancer = 4, scoresNormal, title = 'Complete Data')
+groupbyCancer(cancer = 1, scoresNormal, title = 'BRCA Complete Data')
+groupbyCancer(cancer = 2, scoresNormal, title = 'KIRC Complete Data')
+groupbyCancer(cancer = 3, scoresNormal, title = 'LIHC Complete Data')
+groupbyCancer(cancer = 4, scoresNormal, title = 'LUAD Complete Data')
 
-groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'Original Data')
-groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'Original Data')
-groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'Original Data')
-groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'Original Data')
+groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'LUAD Original Data')
 
 
 ###############################################################################################################
 # Distribution of acc, nmi, pval, and ci
 distComplete <- function(column) {
   par(mfrow = c(2,2))
-  hist(scoresNormal[, column], main = paste0('complete data', ' ', column), xlab = 'Normal', col = 'lightblue')
-  hist(scoresCombat[, column], main = paste0('complete data', ' ', column), xlab = 'Combat', col = 'lightblue' )
-  hist(scoresGenderMale[, column], main = paste0('complete data', ' ', column), xlab = 'Male', col = 'lightblue')
-  hist(scoresGenderFemale[, column], main = paste0('complete data', ' ', column), xlab = 'Female', col = 'lightblue')
+  hist(scoresNormal[, column], main = paste0('complete normal', ' ', column), 
+       xlab = 'Normal', col = 'lightblue')
+  hist(scoresCombat[, column], main = paste0('complete combat', ' ', column), 
+       xlab = 'Combat', col = 'lightblue' )
+  hist(scoresGenderMale[, column], main = paste0('complete male', ' ', column),
+       xlab = 'Male', col = 'lightblue')
+  hist(scoresGenderFemale[, column], main = paste0('complete female', ' ', column), 
+       xlab = 'Female', col = 'lightblue')
 }
 distComplete('acc')
 distComplete('nmi')
@@ -163,16 +171,62 @@ distComplete('ci')
 
 distOrig <- function(column) {
   par(mfrow =  c(2,2))
-  hist(scoresNormalOrig[, column], main = paste0('original data', ' ', column), xlab = 'Normal', col = 'lightblue')
-  hist(scoresCombatOrig[, column], main = paste0('original data', ' ', column), xlab = 'Combat', col = 'lightblue')
-  hist(scoresGenderOrigMale[, column], main = paste0('original data', ' ', column), xlab = 'Male', col = 'lightblue')
-  hist(scoresGenderOrigFemale[, column], main = paste0('original data', ' ', column), xlab = 'Female', col = 'lightblue')
+  hist(scoresNormalOrig[, column], main = paste0('original normal', ' ', column), xlab = 'Normal', col = 'lightblue')
+  hist(scoresCombatOrig[, column], main = paste0('original combat', ' ', column), xlab = 'Combat', col = 'lightblue')
+  hist(scoresGenderOrigMale[, column], main = paste0('original male', ' ', column), xlab = 'Male', col = 'lightblue')
+  hist(scoresGenderOrigFemale[, column], main = paste0('original female', ' ', column), xlab = 'Female', col = 'lightblue')
 }
 distOrig('pval')
 distOrig('ci')
 
+#########################################################################################################
+# Actual pval 
+
+groupbyPval <- function(data, data2, data_indicator = 'Normal', title) {
+  
+  if (grepl('Combat', data_indicator)) {
+    temp <- data %>%
+      group_by(method) %>%
+      summarise(actual_pval_combat = mean(actual_pval, na.rm = T))
+    data2 <- data2[which(data2$cancer == 2),]
+   
+    temp.2 <- data2 %>%
+      group_by(method) %>%
+      summarise(actual_pval_normal = mean(actual_pval, na.rm = T))
+    temp.full <- merge(temp, temp.2, by = 'method')
+    
+    temp_melt <- melt(temp.full, id.vars = c('method'))
+    ggplot(data = temp_melt, aes(reorder(method, value), value, fill = variable)) + geom_bar(stat = 'identity') +
+     xlab('Method') + ggtitle(title) + theme_538_bar
+  
+    } else {
+  
+    temp <- data %>%
+      group_by(method) %>%
+      summarise(actual_pval = mean(actual_pval, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    ggplot(data = temp_melt, aes(reorder(method, value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ggtitle(title) + theme_538_bar
+  }
+
+}
+
+groupbyPval(scoresNormal, title = 'Complete Data')
+groupbyPval(scoresNormalOrig, title = 'Original Data')
+groupbyPval(scoresNormalOrigClust, title = 'Original Data')
 
 
+groupbyPval(scoresCombat, title = 'KIRC Complete with Combat')
+groupbyPval(scoresCombatOrig, title = 'KIRC Complete with Combat')
+groupbyPval(scoresCombat, scoresNormal, data_indicator = 'Combat', title = 'KIRC Complete with Combat and Normal')
+groupbyPval(scoresCombatOrig, scoresNormalOrig, data_indicator = 'Combat', title = 'KIRC Original with Combat and Normal')
+
+groupbyPval(scoresGenderMale, title = 'Complete Data Male')
+groupbyPval(scoresGenderOrigMale, title = 'Original Data Male')
+
+groupbyPval(scoresGenderFemale, title = 'Complete Data with Female')
+groupbyPval(scoresGenderOrigFemale,title = 'Original Data with Female')
 
 
 
