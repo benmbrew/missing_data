@@ -4,6 +4,8 @@
 # Load libraries
 library(dplyr)
 library(ggplot2)
+library(reshape2)
+
 ###############################################################################
 # Initialize folders
 homeFolder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
@@ -12,7 +14,7 @@ testFolder <- paste(projectFolder, "Scripts",
                     "06_Combat",
                     "evaluate_original_imputation", sep="/")
 dataFolder <- paste(projectFolder, 'Data', sep = '/')
-resultsFolder <- paste(testFolder, "Results", sep="/")
+resultsFolder <- paste(projectFolder, 'Scripts/06_Results', sep = '/')
 
 ###############################################################################
 # Initialize fixed variables
@@ -24,6 +26,8 @@ numCores <- 12
 numFeat <- 2000
 
 source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
+source(paste0(resultsFolder, '/Lib/helpers.R'))
+
 
 ################################################################################
 # Load clinical data
@@ -346,49 +350,72 @@ dim(clinicalDataCompleteLUAD) # 430
 # Barplots of all vital_status and gender (with NAs) for complete data (clinicalDataComplete) and not complete (clin)
 
 # group by vital status and return a bargraph of alive, dead, and NAs percentage for complete and left out clinical ids.
-groupByVital <- function(data, title) {
+groupByVital <- function(data, data2, title) {
   
   temp <- data %>%
     group_by(vital_status) %>%
     summarise(counts = n())
   
   temp$percent <- (temp$counts/nrow(data))*100
+  temp$counts <- NULL
   
-  ggplot(data = temp, aes(vital_status, percent)) + geom_bar(stat = 'identity') + ggtitle(title)
+  temp2 <- data2 %>%
+    group_by(vital_status) %>%
+    summarise(counts = n())
+  
+  temp2$percent_not_in_intersection <- (temp2$counts/nrow(data2))*100
+  temp2$counts <- NULL
+  
+  temp_full <- left_join(temp, temp2, by = 'vital_status')
+  temp_full$percent_not_in_intersection[is.na(temp_full$percent_not_in_intersection)] <- 0
+  
+  temp_melt <- melt(temp_full, id.vars = c('vital_status'))
+  
+  ggplot(data = temp_melt, aes(vital_status, value, fill = variable)) + 
+    geom_bar(stat = 'identity', position = 'dodge') + ggtitle(title) +
+    theme_538_bar
   
 }
 
-groupByVital(clinicalDataCompleteBRCA, title = 'BRCA Complete')
-groupByVital(clinBrca, title = 'BRCA Not in Intersection')
-groupByVital(clinicalDataCompleteKIRC, title = 'KIRC Complete')
-groupByVital(clinKirc, title = 'KIRC Not in Intersection')
-groupByVital(clinicalDataCompleteLIHC, title = 'LIHC Complete')
-groupByVital(clinLihc, title = 'LIHC Not in Intersection')
-groupByVital(clinicalDataCompleteLUAD, title = 'LUAD Complete')
-groupByVital(clinLuad, title = 'LUAD Not in Intersection')
+groupByVital(clinicalDataCompleteBRCA,clinBrca, title = 'BRCA Complete')
+groupByVital(clinicalDataCompleteKIRC,clinKirc, title = 'KIRC Complete')
+groupByVital(clinicalDataCompleteLIHC,clinLihc, title = 'LIHC Complete')
+groupByVital(clinicalDataCompleteLUAD,clinLuad, title = 'LUAD Complete')
 
 
 # group by gender and return a bargraph of alive, dead, and NAs percentage for complete and left out clinical ids.
-groupByGender <- function(data, title) {
+groupByGender <- function(data,data2, title) {
   
   temp <- data %>%
     group_by(gender) %>%
     summarise(counts = n())
   
   temp$percent <- (temp$counts/nrow(data))*100
+  temp$counts <- NULL
   
-  ggplot(data = temp, aes(gender, percent)) + geom_bar(stat = 'identity') + ggtitle(title)
+  temp2 <- data2 %>%
+    group_by(gender) %>%
+    summarise(counts = n())
+  
+  temp2$percent_not_in_intersection <- (temp2$counts/nrow(data2))*100
+  temp2$counts <- NULL
+  
+  temp_full <- left_join(temp, temp2, by = 'gender')
+  temp_full$percent_not_in_intersection[is.na(temp_full$percent_not_in_intersection)] <- 0
+  
+  temp_melt <- melt(temp_full, id.vars = c('gender'))
+  
+  ggplot(data = temp_melt, aes(gender, value, fill = variable)) + 
+    geom_bar(stat = 'identity', position = 'dodge') + ggtitle(title) +
+    theme_538_bar
+  
   
 }
 
-groupByGender(clinicalDataCompleteBRCA, title = 'BRCA Complete')
-groupByGender(clinBrca, title = 'BRCA Not in Intersection')
-groupByGender(clinicalDataCompleteKIRC, title = 'KIRC Complete')
-groupByGender(clinKirc, title = 'KIRC Not in Intersection')
-groupByGender(clinicalDataCompleteLIHC, title = 'LIHC Complete')
-groupByGender(clinLihc, title = 'LIHC Not in IntersectionUnion')
-groupByGender(clinicalDataCompleteLUAD, title = 'LUAD Union')
-groupByGender(clinLuad, title = 'LUAD Not in Intersection')
+groupByGender(clinicalDataCompleteBRCA,clinBrca, title = 'BRCA Complete')
+groupByGender(clinicalDataCompleteKIRC,clinKirc, title = 'KIRC Complete')
+groupByGender(clinicalDataCompleteLIHC,clinLihc, title = 'LIHC Complete')
+groupByGender(clinicalDataCompleteLUAD,clinLuad, title = 'LUAD Union')
 
 ##############################################################################################
 # Histograms of days_to_death 
@@ -400,7 +427,6 @@ daysToDeath <- function(data, title, column) {
                                 paste0(round((nrow(data[which(data$vital_status == 'alive'),])/nrow(data))*100), '% alive'),
                                 paste0(round((nrow(data[which(data$vital_status == 'dead'),])/nrow(data))*100), '% dead')), bty = 'n') 
 }
-
 # BRCA
 daysToDeath(clinicalDataCompleteBRCA, title = 'BRCA Complete', column = 'Days To Death')
 daysToDeath(clinBrca, title = 'BRCA Not in Intersection', column = 'Days To Death')
@@ -408,7 +434,7 @@ daysToDeath(clinBrca, title = 'BRCA Not in Intersection', column = 'Days To Deat
 # KIRC
 daysToDeath(clinicalDataCompleteKIRC, title = 'KIRC Complete', column = 'Days To Death')
 daysToDeath(clinKirc, title = 'KIRC Not in Intersection', column = 'Days To Death')
-
+daysToDeath <- f
 # LIHC
 daysToDeath(clinicalDataCompleteLIHC, title = 'LIHC Complete', column = 'Days To Death')
 daysToDeath(clinLihc, title = 'LIHC Not in Intersection', column = 'Days To Death')
@@ -541,13 +567,14 @@ Difference <- function(column, title) {
   
   temp <- data.frame(x = c('BRCA', 'KIRC', 'LIHC', 'LUAD'), y = c(temp.diff_BRCA, temp.diff_KIRC, temp.diff_LIHC, temp.diff_LUAD))
   
-  ggplot(temp, aes(x, y)) + geom_bar(stat = 'identity') + ggtitle(title)
+  ggplot(temp, aes(x, y)) + geom_bar(stat = 'identity') + ggtitle(title) + theme_538_bar + 
+    ylab('Difference')
 
 }
 
-Difference(column = 'days_to_death', title = 'Difference in days_to_death between complete and not complete')
-Difference(column = 'days_to_last_followup', title = 'Difference in days_to_last_followup between complete and not complete')
-Difference(column = 'survTime', title = 'Difference in Survial Time between complete and not complete')
+Difference(column = 'days_to_death', title = 'Difference in Avg days_to_death between complete and not complete')
+Difference(column = 'days_to_last_followup', title = 'Difference in Avg days_to_last_followup between complete and not complete')
+Difference(column = 'survTime', title = 'Difference in Avg Survial Time between complete and not complete')
 Difference(column = 'vital_status', title = 'Difference in Percent Alive between complete and not complete')
 Difference(column = 'gender', title = 'Difference in Percent Female between complete and not complete')
 

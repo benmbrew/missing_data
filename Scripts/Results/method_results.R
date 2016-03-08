@@ -3,7 +3,6 @@
 library(ggplot2)
 library(reshape2)
 library(dplyr)
-source(paste0(results_folder, '/Lib/helpers.R'))
 ################################################################################################
 # Initialize folders, 
 home_folder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
@@ -11,10 +10,13 @@ project_folder <- paste(home_folder, 'Projects/SNF/NM_2015', sep = '/')
 scripts_folder <- paste(project_folder, "Scripts", '06_Two_Thousand_Features', sep = "/")
 plots_folder <- paste(scripts_folder, "analyze_results/Plots", sep ="/")
 results_folder <- paste(project_folder, 'Scripts/06_Results', sep = '/')
+source(paste0(results_folder, '/Lib/helpers.R'))
+
 
 # Load data
 scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
+scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigInt.csv'))
 scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
 
 
@@ -30,6 +32,8 @@ scoresNormal$method <- interaction(scoresNormal$cluster,
                                    scoresNormal$impute, drop = TRUE)
 scoresNormalOrig$method <- interaction(scoresNormalOrig$cluster,
                                    scoresNormalOrig$impute, drop = TRUE)
+scoresNormalOrigInt$method <- interaction(scoresNormalOrigInt$cluster,
+                                       scoresNormalOrigInt$impute, drop = TRUE)
 scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
                                        scoresNormalOrigClust$impute, drop = TRUE)
 
@@ -182,7 +186,7 @@ distOrig('ci')
 #########################################################################################################
 # Actual pval 
 
-groupbyPval <- function(data, data2, data_indicator = 'Normal', title) {
+groupbyPval <- function(data, data2, data_indicator = 'Normal', cancer = NULL, title) {
   
   if (grepl('Combat', data_indicator)) {
     temp <- data %>%
@@ -201,6 +205,7 @@ groupbyPval <- function(data, data2, data_indicator = 'Normal', title) {
   
     } else {
   
+    data <- data[which(data$cancer == cancer),]
     temp <- data %>%
       group_by(method) %>%
       summarise(actual_pval = mean(actual_pval, na.rm = T))
@@ -212,13 +217,26 @@ groupbyPval <- function(data, data2, data_indicator = 'Normal', title) {
 
 }
 
-groupbyPval(scoresNormal, title = 'Complete Data')
+groupbyPval(scoresNormal, title = 'Complete Data BRCA', cancer = 1)
+groupbyPval(scoresNormal, title = 'Complete Data KIRC', cancer = 2)
+groupbyPval(scoresNormal, title = 'Complete Data LIHC', cancer = 3)
+groupbyPval(scoresNormal, title = 'Complete Data LUAD', cancer = 4)
+
+groupbyPval(scoresNormalOrig, title = 'Union Data BRCA', cancer = 1)
+groupbyPval(scoresNormalOrig, title = 'Union Data KIRC', cancer = 2)
+groupbyPval(scoresNormalOrig, title = 'Union Data LIHC', cancer = 3)
+groupbyPval(scoresNormalOrig, title = 'Union Data LUAD', cancer = 4)
+
+
+
+
+
 groupbyPval(scoresNormalOrig, title = 'Original Data')
 groupbyPval(scoresNormalOrigClust, title = 'Original Data')
 
 
 groupbyPval(scoresCombat, title = 'KIRC Complete with Combat')
-groupbyPval(scoresCombatOrig, title = 'KIRC Complete with Combat')
+groupbyPval(scoresCombatOrig, title = 'KIRC Original with Combat')
 groupbyPval(scoresCombat, scoresNormal, data_indicator = 'Combat', title = 'KIRC Complete with Combat and Normal')
 groupbyPval(scoresCombatOrig, scoresNormalOrig, data_indicator = 'Combat', title = 'KIRC Original with Combat and Normal')
 
@@ -228,7 +246,39 @@ groupbyPval(scoresGenderOrigMale, title = 'Original Data Male')
 groupbyPval(scoresGenderFemale, title = 'Complete Data with Female')
 groupbyPval(scoresGenderOrigFemale,title = 'Original Data with Female')
 
+################################################################################################################
+# Look at intersection
+temp <- scoresNormalOrigInt %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(intAcc, na.rm = T),
+            meanNmi = mean(intNmi, na.rm = T))
 
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('Intersection of Union') + theme_538_bar
+
+
+## By Cancer
+groupByCancerInt <- function(cancer, title) {
+  temp.data <- scoresNormalOrigInt[scoresNormalOrigInt$cancer == cancer,]
+  
+  temp <- temp.data %>%
+    group_by(method) %>%
+    summarise(meanAcc = mean(intAcc, na.rm = T),
+              meanNmi = mean(intNmi, na.rm = T))
+  
+  temp_melt <- melt(temp, id.vars = c('method'))
+  
+  ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title) + theme_538_bar
+  
+}
+
+groupByCancerInt(1, title = 'BRCA Intersection of Union')
+groupByCancerInt(2, title = 'KIRC Intersection of Union')
+groupByCancerInt(3, title = 'LIHC Intersection of Union')
+groupByCancerInt(4, title = 'LUAD Intersection of Union')
 
 
 
