@@ -64,42 +64,13 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
     # extract all cases which appear in all of the data types (intersection)
     completeData <- columnIntersection(cases) # now ncol in each matrix is the same and identical to each other. 
     
-    # subset the clinical data so that it corresponds to individuals in the complete data
-    completeIds <- colnames(completeData[[1]])
-    completeIds <- transformIDFormat(completeIds)
-    
-    # find the position of the patient IDS in the clinical data 
-    clinicalData <- as.data.frame(clinicalData) # not in Daniel's original code 
-    clinicalIds <- as.character(clinicalData$bcr_patient_barcode)
-    clinicalInd <- match(completeIds, clinicalIds) # returns a vector of positions of (first) matches of its 
-    # first argument in its second. Takes length of x with positions of y. NA where x is not in y. So this will
-    # be length of complete_ids with position of clinical ids where they match.
-    clinicalData <- clinicalData[clinicalInd, ]# now clinical data has ids match with complete data (cases)
     
   } else {
-    # Transform patient IDs to the clinical ID format
-    transformIDFormat <- function(x) {
-      # Keep the first 12 characters
-      x <- substr(x, 1, 12)
-      # Change each "." to "-"
-      x <- gsub(".", "-", x, fixed=TRUE)
-      # Make all letters lowercase
-      x <- tolower(x)
-      
-      return(x)
-    }
+  
     
     # Extract all cases which appear in at least one of the data types
     unionData <- columnUnion(cases)
     
-    # Subset the clinical data so that it corresponds to individuals
-    # in the union data
-    unionIDs <- colnames(unionData[[1]])
-    unionIDs <- transformIDFormat(unionIDs)
-    # Find the position of the patient IDs in the clinical data
-    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
-    clinicalInd <- match(unionIDs, clinicalIDs)
-    clinicalData <- clinicalData[clinicalInd, ]
     
   }
   
@@ -146,73 +117,201 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
   #   ####################################################################################
   # #   Normalize the features in the data sets.
   # #   Normalization is performed before imputation and we expect that the
-  # #   data will still be normalized after imputation (before clustering).
-  rowStatistics <- function(cases){
-    num_views <- length(cases)
-    row_stats <- vector('list', num_views)
-    
-    for(v in 1:num_views){
-      #calculate the row means and std deviations 
-      row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-      row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-      constant_ind <- row_sd == 0
-      row_sd[constant_ind] <- 1
-      row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-    }
-    return(row_stats)
-  }
-  
-  normalizeData <- function(data, stat){
-    for(v in 1:length(data)) {
-      data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-      data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-    }
-    return(data)
-  }
+#   # #   data will still be normalized after imputation (before clustering).
+#   rowStatistics <- function(cases){
+#     num_views <- length(cases)
+#     row_stats <- vector('list', num_views)
+#     
+#     for(v in 1:num_views){
+#       #calculate the row means and std deviations 
+#       row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+#       row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+#       constant_ind <- row_sd == 0
+#       row_sd[constant_ind] <- 1
+#       row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+#     }
+#     return(row_stats)
+#   }
+#   
+#   normalizeData <- function(data, stat){
+#     for(v in 1:length(data)) {
+#       data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+#       data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+#     }
+#     return(data)
+#   }
+#   
+#   if (complete) {
+#     completeStat <- rowStatistics(completeData)
+#     completeData <- normalizeData(completeData, completeStat)
+#   } else {
+#     unionStat <- rowStatistics(unionData)
+#     unionData <- normalizeData(unionData, unionStat)
+#   }
   
   if (complete) {
-    completeStat <- rowStatistics(completeData)
-    completeData <- normalizeData(completeData, completeStat)
-  } else {
-    unionStat <- rowStatistics(unionData)
-    unionData <- normalizeData(unionData, unionStat)
-  }
-  
-  if (complete) {
-    return(list(first = completeData, second = clinicalData))
+    return(completeData)
     
   } else {
-    return(list(first = unionData, second = clinicalData))
+    return(unionData)
   }
 }
 
 #####################################################################################
 # Load complete, union and clinical data.
 
-BRCAComplete <- loadData(cancer = 'BRCA', clinicalDataBRCA, complete = TRUE)
-BRCAUnion <- loadData(cancer = 'BRCA', clinicalDataBRCA, complete = FALSE)
-clinicalDataCompleteBRCA <- BRCAComplete[[2]] 
-clinicalDataUnionBRCA <- BRCAUnion[[2]]
-BRCAComplete <- BRCAComplete[[1]]
-BRCAUnion <- BRCAUnion[[1]]
+BRCAComplete <- loadData(cancer = 'BRCA', complete = TRUE)
+BRCAUnion <- loadData(cancer = 'BRCA', complete = FALSE)
 
-KIRCComplete <- loadData(cancer = 'KIRC', clinicalDataKIRC, complete = TRUE)
-KIRCUnion <- loadData(cancer = 'KIRC', clinicalDataKIRC, complete = FALSE)
-clinicalDataCompleteKIRC <- KIRCComplete[[2]] 
-clinicalDataUnionKIRC <- KIRCUnion[[2]]
-kircComplete <- KIRCComplete[[1]]
-kircUnion <- KIRCUnion[[1]]
+KIRCComplete <- loadData(cancer = 'KIRC', complete = TRUE)
+KIRCUnion <- loadData(cancer = 'KIRC', complete = FALSE)
 
-LIHCComplete <- loadData(cancer = 'LIHC', clinicalDataLIHC, complete = TRUE)
-LIHCUnion <- loadData(cancer = 'LIHC', clinicalDataLIHC, complete = FALSE)
-clinicalDataCompleteLIHC <- LIHCComplete[[2]] 
-clinicalDataUnionLIHC <- LIHCUnion[[2]]
-LIHCComplete <- LIHCComplete[[1]]
-LIHCUnion <- LIHCUnion[[1]]
+LIHCComplete <- loadData(cancer = 'LIHC', complete = TRUE)
+LIHCUnion <- loadData(cancer = 'LIHC', complete = FALSE)
 
-LUADComplete <- loadData(cancer = 'LUAD', clinicalDataLUAD, complete = TRUE)
-LUADUnion <- loadData(cancer = 'LUAD', clinicalDataLUAD, complete = FALSE)
-clinicalDataCompleteLUAD <- LUADComplete[[2]] 
-clinicalDataUnionLUAD <- LUADUnion[[2]]
-LUADComplete <- LUADComplete[[1]]
-LUADUnion <- LUADUnion[[1]]
+LUADComplete <- loadData(cancer = 'LUAD', complete = TRUE)
+LUADUnion <- loadData(cancer = 'LUAD', complete = FALSE)
+
+#######################################################################################
+# separate into data types 
+# BRCA
+brca_comp_methyl <- BRCAComplete[[1]]
+brca_comp_mirna <- BRCAComplete[[2]]
+brca_comp_mrna <- BRCAComplete[[3]]
+
+brca_union_methyl <- BRCAUnion[[1]]
+brca_union_mirna <- BRCAUnion[[2]]
+brca_union_mrna <- BRCAUnion[[3]]
+
+# kirc
+kirc_comp_methyl <- KIRCComplete[[1]]
+kirc_comp_mirna <- KIRCComplete[[2]]
+kirc_comp_mrna <- KIRCComplete[[3]]
+
+kirc_union_methyl <- KIRCUnion[[1]]
+kirc_union_mirna <- KIRCUnion[[2]]
+kirc_union_mrna <- KIRCUnion[[3]]
+
+# lihc
+lihc_comp_methyl <- LIHCComplete[[1]]
+lihc_comp_mirna <- LIHCComplete[[2]]
+lihc_comp_mrna <- LIHCComplete[[3]]
+
+lihc_union_methyl <- LIHCUnion[[1]]
+lihc_union_mirna <- LIHCUnion[[2]]
+lihc_union_mrna <- LIHCUnion[[3]]
+
+# luad
+luad_comp_methyl <- LUADComplete[[1]]
+luad_comp_mirna <- LUADComplete[[2]]
+luad_comp_mrna <- LUADComplete[[3]]
+
+luad_union_methyl <- LUADUnion[[1]]
+luad_union_mirna <- LUADUnion[[2]]
+luad_union_mrna <- LUADUnion[[3]]
+
+#######################################################################################
+# extract samples in union that are not in intersection for each data type 
+
+# BRCA
+brca_not_methyl <- brca_union_methyl[,!colnames(brca_union_methyl) %in% colnames(brca_comp_methyl)]
+brca_not_mirna <- brca_union_mirna[,!colnames(brca_union_mirna) %in% colnames(brca_comp_mirna)]
+brca_not_mrna <- brca_union_mrna[,!colnames(brca_union_mrna) %in% colnames(brca_comp_mrna)]
+
+# KIRC
+kirc_not_methyl <- kirc_union_methyl[,!colnames(kirc_union_methyl) %in% colnames(kirc_comp_methyl)]
+kirc_not_mirna <- kirc_union_mirna[,!colnames(kirc_union_mirna) %in% colnames(kirc_comp_mirna)]
+kirc_not_mrna <- kirc_union_mrna[,!colnames(kirc_union_mrna) %in% colnames(kirc_comp_mrna)]
+
+# lihc
+lihc_not_methyl <- lihc_union_methyl[,!colnames(lihc_union_methyl) %in% colnames(lihc_comp_methyl)]
+lihc_not_mirna <- lihc_union_mirna[,!colnames(lihc_union_mirna) %in% colnames(lihc_comp_mirna)]
+lihc_not_mrna <- lihc_union_mrna[,!colnames(lihc_union_mrna) %in% colnames(lihc_comp_mrna)]
+
+# luad
+luad_not_methyl <- luad_union_methyl[,!colnames(luad_union_methyl) %in% colnames(luad_comp_methyl)]
+luad_not_mirna <- luad_union_mirna[,!colnames(luad_union_mirna) %in% colnames(luad_comp_mirna)]
+luad_not_mrna <- luad_union_mrna[,!colnames(luad_union_mrna) %in% colnames(luad_comp_mrna)]
+
+
+###############################################################################################################
+################# Compare brca
+par(mfrow = c(1,2))
+# methyl
+brca_comp_methyl_mean <- apply(brca_comp_methyl, 2, mean)
+hist(brca_comp_methyl_mean)
+brca_not_methyl_mean <- apply(brca_not_methyl, 2, mean)
+hist(brca_not_methyl_mean)
+
+# mirna
+brca_comp_mirna_mean <- apply(brca_comp_mirna, 2, mean)
+hist(brca_comp_mirna_mean)
+brca_not_mirna_mean <- apply(brca_not_mirna, 2, mean)
+hist(brca_not_mirna_mean)
+
+# mrna
+brca_comp_mrna_mean <- apply(brca_comp_mrna, 2, mean)
+hist(brca_comp_mrna_mean)
+brca_not_mrna_mean <- apply(brca_not_mrna, 2, mean)
+hist(brca_not_mrna_mean)
+
+############### Compare kirc
+
+# methyl
+kirc_comp_methyl_mean <- apply(kirc_comp_methyl, 2, mean)
+hist(kirc_comp_methyl_mean)
+kirc_not_methyl_mean <- apply(kirc_not_methyl, 2, mean)
+hist(kirc_not_methyl_mean)
+
+# mirna
+kirc_comp_mirna_mean <- apply(kirc_comp_mirna, 2, mean)
+hist(kirc_comp_mirna_mean)
+kirc_not_mirna_mean <- apply(kirc_not_mirna, 2, mean)
+hist(kirc_not_mirna_mean)
+
+# mrna
+kirc_comp_mrna_mean <- apply(kirc_comp_mrna, 2, mean)
+hist(kirc_comp_mrna_mean)
+kirc_not_mrna_mean <- apply(kirc_not_mrna, 2, mean)
+hist(kirc_not_mrna_mean)
+
+############### Compare lihc
+
+# methyl
+lihc_comp_methyl_mean <- apply(lihc_comp_methyl, 2, mean)
+hist(lihc_comp_methyl_mean)
+lihc_not_methyl_mean <- apply(lihc_not_methyl, 2, mean)
+hist(lihc_not_methyl_mean)
+
+# mirna
+lihc_comp_mirna_mean <- apply(lihc_comp_mirna, 2, mean)
+hist(lihc_comp_mirna_mean)
+lihc_not_mirna_mean <- apply(lihc_not_mirna, 2, mean)
+hist(lihc_not_mirna_mean)
+
+# mrna
+lihc_comp_mrna_mean <- apply(lihc_comp_mrna, 2, mean)
+hist(lihc_comp_mrna_mean)
+lihc_not_mrna_mean <- apply(lihc_not_mrna, 2, mean)
+hist(lihc_not_mrna_mean)
+
+############### Compare luad
+
+# methyl
+luad_comp_methyl_mean <- apply(luad_comp_methyl, 2, mean)
+hist(luad_comp_methyl_mean)
+luad_not_methyl_mean <- apply(luad_not_methyl, 2, mean)
+hist(luad_not_methyl_mean)
+
+# mirna
+luad_comp_mirna_mean <- apply(luad_comp_mirna, 2, mean)
+hist(luad_comp_mirna_mean)
+luad_not_mirna_mean <- apply(luad_not_mirna, 2, mean)
+hist(luad_not_mirna_mean)
+
+# mrna
+luad_comp_mrna_mean <- apply(luad_comp_mrna, 2, mean)
+hist(luad_comp_mrna_mean)
+luad_not_mrna_mean <- apply(luad_not_mrna, 2, mean)
+hist(luad_not_mrna_mean)
+

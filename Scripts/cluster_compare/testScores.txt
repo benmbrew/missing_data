@@ -1,0 +1,16 @@
+"method" "acc" "nmi" "pval" "ci"
+"Hierarchical.KNN" 2 4 6 9
+"iCluster.KNN" 6 6 0 0
+"SNF.KNN" 10 10 6 6
+"Hierarchical.LLS" 0 1 2 2
+"iCluster.LLS" 0 0 2 1
+"SNF.LLS" 8 8 10 6
+"Hierarchical.LSA" 2 2 6 10
+"iCluster.LSA" 6 6 1 0
+"SNF.LSA" 11 12 6 3
+"SNF.Median" 13 12 9 8
+"Hierarchical.Rand" 2 2 6 10
+"iCluster.Rand" 2 2 9 6
+"SNF.Rand" 14 14 9 6
+"SNF.Regres" 8 9 3 2
+"SNF.Self" 11 10 3 10
