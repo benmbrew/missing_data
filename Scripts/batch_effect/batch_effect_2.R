@@ -31,29 +31,29 @@ transposeDataFrame <- function(df, colnamesInd=1) {
   df
 }
 
-
-extractRelevantColumns <- function(data) {
-  # List of features used for survival analysis
-  features <- c("admin.batch_number",
-                "patient.bcr_patient_barcode",
-                "patient.bcr_patient_uuid",
-                "patient.days_to_death",
-                "patient.days_to_last_followup",
-                "patient.days_to_last_known_alive",
-                "patient.vital_status",
-                "patient.gender")
-  patientFeatures <- paste("patient", features, sep=".")
-  
-  # Add missing features to the data
-  missingFeaturesInd <- !(features %in% colnames(data))
-  data[features[missingFeaturesInd]] <- NA
-  
-  # Extract and rename the relevant columns
-  data <- data[features]
-  colnames(data) <- features
-  
-  return(data)
-}
+# 
+# extractRelevantColumns <- function(data) {
+#   # List of features used for survival analysis
+#   features <- c("admin.batch_number",
+#                 "patient.bcr_patient_barcode",
+#                 "patient.bcr_patient_uuid",
+#                 "patient.days_to_death",
+#                 "patient.days_to_last_followup",
+#                 "patient.days_to_last_known_alive",
+#                 "patient.vital_status",
+#                 "patient.gender")
+#   patientFeatures <- paste("patient", features, sep=".")
+#   
+#   # Add missing features to the data
+#   missingFeaturesInd <- !(features %in% colnames(data))
+#   data[features[missingFeaturesInd]] <- NA
+#   
+#   # Extract and rename the relevant columns
+#   data <- data[features]
+#   colnames(data) <- features
+#   
+#   return(data)
+# }
 
 
 loadClinData <- function(cancer) {
@@ -77,31 +77,31 @@ loadClinData <- function(cancer) {
 
 # Process the clinical data
 clinicalDataBRCA <- loadClinData(cancer = 'BRCA')
-clinicalDataBRCA <- extractRelevantColumns(clinicalDataBRCA)
+# clinicalDataBRCA <- extractRelevantColumns(clinicalDataBRCA)
 clinicalDataKIRC <- loadClinData(cancer = 'KIRC')
-clinicalDataKIRC <- extractRelevantColumns(clinicalDataKIRC)
+# clinicalDataKIRC <- extractRelevantColumns(clinicalDataKIRC)
 clinicalDataLIHC <- loadClinData(cancer = 'LIHC')
-clinicalDataLIHC <- extractRelevantColumns(clinicalDataLIHC)
+# clinicalDataLIHC <- extractRelevantColumns(clinicalDataLIHC)
 clinicalDataLUAD <- loadClinData(cancer = 'LUAD')
-clinicalDataLUAD <- extractRelevantColumns(clinicalDataLUAD)
+# clinicalDataLUAD <- extractRelevantColumns(clinicalDataLUAD)
 
-# remove patient from column names
-removePatients <- function(data) {
-  
-  features <- colnames(data)
-  split <- strsplit(features, '.', fixed = TRUE)
-  keepSplit <- lapply(split, function(x) x[length(x)])
-  features <- unlist(keepSplit)
-  colnames(data) <- features
-  return(data)
-  
-}
-
-# apply the function
-clinicalDataBRCA <- removePatients(clinicalDataBRCA)
-clinicalDataKIRC <- removePatients(clinicalDataKIRC)
-clinicalDataLIHC <- removePatients(clinicalDataLIHC)
-clinicalDataLUAD <- removePatients(clinicalDataLUAD)
+# # remove patient from column names
+# removePatients <- function(data) {
+#   
+#   features <- colnames(data)
+#   split <- strsplit(features, '.', fixed = TRUE)
+#   keepSplit <- lapply(split, function(x) x[length(x)])
+#   features <- unlist(keepSplit)
+#   colnames(data) <- features
+#   return(data)
+#   
+# }
+# 
+# # apply the function
+# clinicalDataBRCA <- removePatients(clinicalDataBRCA)
+# clinicalDataKIRC <- removePatients(clinicalDataKIRC)
+# clinicalDataLIHC <- removePatients(clinicalDataLIHC)
+# clinicalDataLUAD <- removePatients(clinicalDataLUAD)
 
 
 #########################################################################################
@@ -267,7 +267,7 @@ kirc_full <- loadData(cancer = 'KIRC', clinicalDataKIRC, complete = TRUE)
 lihc_full <- loadData(cancer = 'LIHC', clinicalDataLIHC, complete = TRUE)
 luad_full <- loadData(cancer = 'LUAD', clinicalDataLUAD, complete = TRUE)
 
-#### unlist kirc_full
+#### 
 kirc_data_full <- kirc_full[[1]]
 brca_data_full <- brca_full[[1]]
 lihc_data_full <- lihc_full[[1]]
@@ -331,98 +331,152 @@ dataMerge <- function(data, clinical){
   return(data)
 }
 
-# factor_variables <- c(159, 161, 162, 163, 168, 170, 171, 176, 177, 198, 201, 206, 259, 260, 260, 261, 262, 
-#                       271, 272, 278, 279, 283, 284, 285, 286, 288, 289, 295, 298, 309, 311, 312, 313, 315,
-#                       316, 409, 418, 422, 426, 427, 428, 431, 432, 433, 436, 437, 438, 439)
+### remove rows from clinical variables that are mostly NA 
+removeNAHalf <- function(data) {
+  half_data <- nrow(data)*0.5
+  data <- data[,apply(data, 2, function(x) length(which(is.na(x))) < half_data)]
+  return(data)
+}
+
+clinicalDataBRCA <- removeNAHalf(clinicalDataBRCA)
+clinicalDataKIRC <- removeNAHalf(clinicalDataKIRC)
+clinicalDataLIHC <- removeNAHalf(clinicalDataLIHC)
+clinicalDataLUAD <- removeNAHalf(clinicalDataLUAD)
+
+numeric_brca <- c(10,28,32,59)
+numeric_kirc <- c(10,25)
+numeric_lihc <- c(12,28,32,33,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,82)
+numeric_luad <- c(10,25,48,68)
+
+for (i in numeric_brca) {
+  clinicalDataBRCA[, i] <- as.numeric(clinicalDataBRCA[, i])
+}
+for (i in numeric_kirc) {
+  clinicalDataKIRC[, i] <- as.numeric(clinicalDataKIRC[, i])
+}
+for (i in numeric_lihc) {
+  clinicalDataLIHC[, i] <- as.numeric(clinicalDataLIHC[, i])
+}
+for (i in numeric_luad) {
+  clinicalDataLUAD[, i] <- as.numeric(clinicalDataLUAD[, i])
+}
+
 
 
 
 pcaAll <- function(data, clin, name) {
-
-  for (i in 7:8) {
+  
+  for (i in 1:nrow(clin)) {
     
     variable <- names(clin[i])
-  
+    
+    if(variable == 'patient.bcr_patient_barcode') {
+      variable <- 'admin.file_uuid'
+    }
     
     ## choose clinical variable 
     # variable <- 'admin.project_code'
     
-    temp <- clin[, c('bcr_patient_barcode', variable)]
+    temp <- clin[, c('patient.bcr_patient_barcode', variable)]
     
     data_batch <- dataMerge(data,  temp)
     
-   
-    # kirc_mirna_merge_full <- dataMerge(kirc_mirna_full, temp)
-    # kirc_mrna_merge_full <- dataMerge(kirc_mrna_full, temp)
-    
-    # # recode clinical barcode to id so can merge with kirc_methyl
-    # names(clin)[2] <- 'id'
-    # 
-    # # inner join clin and kirc_methyl_merge_full by id
-    # batch_data <- inner_join(kirc_methyl_merge_full, clin, by = 'id')
-    # batch_data <- batch_data[, -c(20922:20926)]
-    
     # run pca
     pca <- function(data){
-    #data <- data[!is.na(data$days_to_death),]
-    # data <- data[data$days_to_death > 0,]
-    data_length <- (ncol(data)-1) 
-    pca <- prcomp(data[,2:data_length])
-    return(pca)
+      #data <- data[!is.na(data$days_to_death),]
+      # data <- data[data$days_to_death > 0,]
+      data_length <- (ncol(data)-1) 
+      pca <- prcomp(data[,2:data_length])
+      return(pca)
     }
     
     data_batch_pca <- pca(data_batch)
     
-    
-    # plot batch effect 
-    pcaPlot <- function(pca, data,name){
-    plot(pca$x[,1], 
-         pca$x[,2],
-         xlab = 'PCA 1',
-         ylab = 'PCA 2',
-         cex = 1,
-         main = name,
-         pch = 16,
-         #        xlim= c(min, max),
-         #        ylim = c(min, max),
-         col = as.factor(data[,variable])
-    )
-    abline(v = c(0,0),
-           h = c(0,0))
+    if(is.numeric(clin[,i])) {
       
-      legend('bottomright',
-             legend = unique(as.factor(data[,variable][!is.na(data[,variable])])),
-             col=1:length(as.factor(data[, variable])),
-             pch=16,
-             cex = 0.7)
-    
-     }
+      pcaPlot <- function(pca, data,name) {
+        data <- data[!is.na(data[, ncol(data)]),]
+        colVec<- colorRampPalette(c("green", "red"))(ceiling(max(data[, ncol(data)])))
+        data$cols <- colVec[data[, ncol(data)]]
+        # plot batch effect
+        plot(pca$x[,1], 
+             pca$x[,2],
+             xlab = 'PCA 1',
+             ylab = 'PCA 2',
+             cex = 1,
+             main = name,
+             pch = 16,
+             #        xlim= c(min, max),
+             #        ylim = c(min, max),
+             col = adjustcolor(data$cols, alpha.f = 0.5)
+        )
+        abline(v = c(0,0),
+               h = c(0,0))
+        
+      }
+      
+    } else {
+      
+      
+      # plot batch effect 
+      pcaPlot <- function(pca, data,name){
+        plot(pca$x[,1], 
+             pca$x[,2],
+             xlab = 'PCA 1',
+             ylab = 'PCA 2',
+             cex = 1,
+             main = name,
+             pch = 16,
+             #        xlim= c(min, max),
+             #        ylim = c(min, max),
+             col = as.factor(data[,variable])
+        )
+        abline(v = c(0,0),
+               h = c(0,0))
+        
+        legend('bottomright',
+               legend = unique(as.factor(data[,variable][!is.na(data[,variable])])),
+               col=1:length(as.factor(data[, variable])),
+               pch=16,
+               cex = 0.7)
+        
+      }
+    }
     
     pcaPlot(data_batch_pca, data_batch, name = name)
-    print(i)
-
+    print(paste0('finished clinical variable', i))
+    
   }
-
+  
 }
 
-pdf('/home/benbrew/Desktop/batches.pdf')
+pdf('/home/benbrew/Desktop/batches_kirc.pdf')
 # run function
-pcaAll(kirc_methyl_full, kirc_clin, 'kirc_methyl')
-pcaAll(kirc_mirna_full, kirc_clin, 'kirc_mirna')
-pcaAll(kirc_mrna_full, kirc_clin, 'kirc_mrna')
+pcaAll(kirc_methyl_full, clinicalDataKIRC, 'kirc_methyl')
+pcaAll(kirc_mirna_full, clinicalDataKIRC, 'kirc_mirna')
+pcaAll(kirc_mrna_full, clinicalDataKIRC, 'kirc_mrna')
+dev.off()
 
-pcaAll(brca_methyl_full, brca_clin, 'brca_methyl')
-pcaAll(brca_mirna_full, brca_clin, 'brca_mirna')
-pcaAll(brca_mrna_full, brca_clin, 'brca_mrna')
+pdf('/home/benbrew/Desktop/batches_brca.pdf')
 
-pcaAll(lihc_methyl_full, lihc_clin, 'lihc_methyl')
-pcaAll(lihc_mirna_full, lihc_clin, 'lihc_mirna')
-pcaAll(lihc_mrna_full, lihc_clin, 'lihc_mrna')
+pcaAll(brca_methyl_full, clinicalDataBRCA, 'brca_methyl')
+pcaAll(brca_mirna_full, clinicalDataBRCA, 'brca_mirna')
+pcaAll(brca_mrna_full, clinicalDataBRCA, 'brca_mrna')
+dev.off()
 
-pcaAll(luad_methyl_full, luad_clin, 'luad_methyl')
-pcaAll(luad_mirna_full, luad_clin, 'luad_mirna')
-pcaAll(luad_mrna_full, luad_clin, 'luad_mrna')
+pdf('/home/benbrew/Desktop/batches_lihc.pdf')
 
+pcaAll(lihc_methyl_full, clinicalDataLIHC, 'lihc_methyl')
+pcaAll(lihc_mirna_full, clinicalDataLIHC, 'lihc_mirna')
+pcaAll(lihc_mrna_full, clinicalDataLIHC, 'lihc_mrna')
+
+dev.off()
+
+pdf('/home/benbrew/Desktop/batches_luad.pdf')
+
+pcaAll(luad_methyl_full, clinicalDataLUAD, 'luad_methyl')
+pcaAll(luad_mirna_full, clinicalDataLUAD, 'luad_mirna')
+pcaAll(luad_mrna_full, clinicalDataLUAD, 'luad_mrna')
 
 dev.off()
 
@@ -440,8 +494,8 @@ year_diagnosis <- names(clin[439])
 
 
 pcaFac <- function(variable) { 
-
-
+  
+  
   ## choose clinical variable 
   # variable <- 'admin.project_code'
   
@@ -501,7 +555,7 @@ pcaFac <- function(variable) {
   }
   
   pcaPlot(batch_data_pca, kirc_batch, name = 'KIRC Methylation PCA')
-
+  
 }
 
 pcaFac(gender)
@@ -606,7 +660,6 @@ pcaPlot <- function(pca, data, name){
 
 ################################################
 # gender looks like it is the only interesting clinical variable
-
 
 
 
