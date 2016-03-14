@@ -217,6 +217,11 @@ groupbyPval <- function(data, data2, data_indicator = 'Normal', cancer = NULL, t
 
 }
 
+groupbyPval(scoresNormal, title = 'Complete Data')
+groupbyPval(scoresNormalOrig, title = 'Union Data')
+
+
+
 groupbyPval(scoresNormal, title = 'Complete Data BRCA', cancer = 1)
 groupbyPval(scoresNormal, title = 'Complete Data KIRC', cancer = 2)
 groupbyPval(scoresNormal, title = 'Complete Data LIHC', cancer = 3)
@@ -227,8 +232,10 @@ groupbyPval(scoresNormalOrig, title = 'Union Data KIRC', cancer = 2)
 groupbyPval(scoresNormalOrig, title = 'Union Data LIHC', cancer = 3)
 groupbyPval(scoresNormalOrig, title = 'Union Data LUAD', cancer = 4)
 
-
-
+groupbyPval(scoresNormalOrigClust, title = 'Union Data BRCA Clust', cancer = 1)
+groupbyPval(scoresNormalOrigClust, title = 'Union Data KIRC Clust', cancer = 2)
+groupbyPval(scoresNormalOrigClust, title = 'Union Data LIHC Clust', cancer = 3)
+groupbyPval(scoresNormalOrigClust, title = 'Union Data LUAD Clust', cancer = 4)
 
 
 groupbyPval(scoresNormalOrig, title = 'Original Data')
