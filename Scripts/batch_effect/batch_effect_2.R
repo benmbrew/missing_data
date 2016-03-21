@@ -178,80 +178,80 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
     
   }
   
-  # Select a subset of features which differ most between cases and
-  # controls.
-  
-  #   featureSubsetIndices <- function(cases, subsetSize=numFeat) {
-  #     numViews <- length(cases)
-  #     featureSubsetInd <- vector("list", numViews)
-  #     
-  #     for (v in 1:numViews) {
-  #       # Calculate the t-test p-value for each feature, grouped by cases
-  #       # and controls
-  #       numFeatures <- nrow(cases[[v]])
-  #       pval <- sapply(1:numFeatures,
-  #                      function(i) t.test(cases[[v]][i, ],
-  #                                         controls[[v]][i, ])$p.value)
-  #       
-  #       # Subset the data keeping the features with the smallest p-values
-  #       ind <- order(pval)
-  #       featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
-  #     }
-  #     
-  #     return(featureSubsetInd)
-  #   }
-  #   
-  #   subsetData <- function(data, ind) {
-  #     
-  #     for (v in 1:length(data)) {
-  #       data[[v]] <- data[[v]][ind[[v]], ]
-  #     }
-  #     
-  #     return(data)
-  #   }
-  #   
-  #  if (complete){
-  #     completeInd <- featureSubsetIndices(completeData)
-  #     completeData <- subsetData(completeData, completeInd)
-  #     } else {
-  #     unionInd <- featureSubsetIndices(unionData)
-  #     unionData <- subsetData(unionData, unionInd)
-  #     }
-  # #   
-  #   ####################################################################################
-  # #   Normalize the features in the data sets.
-  # #   Normalization is performed before imputation and we expect that the
-  # #   data will still be normalized after imputation (before clustering).
-  #     rowStatistics <- function(cases){
-  #       num_views <- length(cases)
-  #       row_stats <- vector('list', num_views)
-  #       
-  #       for(v in 1:num_views){
-  #         #calculate the row means and std deviations 
-  #         row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-  #         row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-  #         constant_ind <- row_sd == 0
-  #         row_sd[constant_ind] <- 1
-  #         row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-  #       }
-  #       return(row_stats)
-  #     }
-  #     
-  #     normalizeData <- function(data, stat){
-  #       for(v in 1:length(data)) {
-  #         data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-  #         data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-  #       }
-  #       return(data)
-  #     }
-  #     
-  #    if (complete) {
-  #       completeStat <- rowStatistics(completeData)
-  #       completeData <- normalizeData(completeData, completeStat)
-  #     } else {
-  #     unionStat <- rowStatistics(unionData)
-  #     unionData <- normalizeData(unionData, unionStat)
-  #     }
+#   Select a subset of features which differ most between cases and
+#   controls.
+#   
+#     featureSubsetIndices <- function(cases, subsetSize=numFeat) {
+#       numViews <- length(cases)
+#       featureSubsetInd <- vector("list", numViews)
+#       
+#       for (v in 1:numViews) {
+#         # Calculate the t-test p-value for each feature, grouped by cases
+#         # and controls
+#         numFeatures <- nrow(cases[[v]])
+#         pval <- sapply(1:numFeatures,
+#                        function(i) t.test(cases[[v]][i, ],
+#                                           controls[[v]][i, ])$p.value)
+#         
+#         # Subset the data keeping the features with the smallest p-values
+#         ind <- order(pval)
+#         featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
+#       }
+#       
+#       return(featureSubsetInd)
+#     }
+#     
+#     subsetData <- function(data, ind) {
+#       
+#       for (v in 1:length(data)) {
+#         data[[v]] <- data[[v]][ind[[v]], ]
+#       }
+#       
+#       return(data)
+#     }
+#     
+#    if (complete){
+#       completeInd <- featureSubsetIndices(completeData)
+#       completeData <- subsetData(completeData, completeInd)
+#       } else {
+#       unionInd <- featureSubsetIndices(unionData)
+#       unionData <- subsetData(unionData, unionInd)
+#       }
+#   #   
+#     ####################################################################################
+#   #   Normalize the features in the data sets.
+#   #   Normalization is performed before imputation and we expect that the
+#   #   data will still be normalized after imputation (before clustering).
+#       rowStatistics <- function(cases){
+#         num_views <- length(cases)
+#         row_stats <- vector('list', num_views)
+#         
+#         for(v in 1:num_views){
+#           #calculate the row means and std deviations 
+#           row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+#           row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+#           constant_ind <- row_sd == 0
+#           row_sd[constant_ind] <- 1
+#           row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+#         }
+#         return(row_stats)
+#       }
+#       
+#       normalizeData <- function(data, stat){
+#         for(v in 1:length(data)) {
+#           data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+#           data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+#         }
+#         return(data)
+#       }
+#       
+#      if (complete) {
+#         completeStat <- rowStatistics(completeData)
+#         completeData <- normalizeData(completeData, completeStat)
+#       } else {
+#       unionStat <- rowStatistics(unionData)
+#       unionData <- normalizeData(unionData, unionStat)
+#       }
   
   if (complete) {
     return(list(first = completeData, second = clinicalData))
@@ -273,10 +273,10 @@ brca_data_full <- brca_full[[1]]
 lihc_data_full <- lihc_full[[1]]
 luad_data_full <- luad_full[[1]]
 
-kirc_clin <- kirc_full[[2]]
-brca_clin <- brca_full[[2]]
-lihc_clin <- lihc_full[[2]]
-luad_clin <- luad_full[[2]]
+# kirc_clin <- kirc_full[[2]]
+# brca_clin <- brca_full[[2]]
+# lihc_clin <- lihc_full[[2]]
+# luad_clin <- luad_full[[2]]
 
 
 
@@ -462,7 +462,7 @@ pdf('/home/benbrew/Desktop/batches_brca.pdf')
 pcaAll(brca_methyl_full, clinicalDataBRCA, 'brca_methyl')
 pcaAll(brca_mirna_full, clinicalDataBRCA, 'brca_mirna')
 pcaAll(brca_mrna_full, clinicalDataBRCA, 'brca_mrna')
-dev.off()
+ dev.off()
 
 pdf('/home/benbrew/Desktop/batches_lihc.pdf')
 
