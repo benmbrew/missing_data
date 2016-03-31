@@ -30,6 +30,7 @@ scoresGenderOrig <- read.csv(paste0(results_folder, '/scoresGenderOrig.csv'))
 # Get method types
 scoresNormal$method <- interaction(scoresNormal$cluster,
                                    scoresNormal$impute, drop = TRUE)
+
 scoresNormalOrig$method <- interaction(scoresNormalOrig$cluster,
                                    scoresNormalOrig$impute, drop = TRUE)
 scoresNormalOrigInt$method <- interaction(scoresNormalOrigInt$cluster,
@@ -71,7 +72,7 @@ scoresGenderOrig$nmi <- NULL
 
 groupbyMethod <- function(data, orig = FALSE, title) {
   
-   if (orig){
+   if (orig) {
       temp <- data %>%
         group_by(method) %>%
         summarise(meanPval = mean(pval, na.rm = T),
@@ -287,8 +288,774 @@ groupByCancerInt(2, title = 'KIRC Intersection of Union')
 groupByCancerInt(3, title = 'LIHC Intersection of Union')
 groupByCancerInt(4, title = 'LUAD Intersection of Union')
 
+######################################################################################################################
+# different measure of pvalue and ci
+
+########################################################################################
+# complete data 
+scoresNormalPval <- read.csv(paste0(results_folder, '/scoresTwoThousandPval.csv'))
+
+scoresNormalPval$method <- interaction(scoresNormalPval$cluster,
+                                       scoresNormalPval$impute, drop = TRUE)
+
+# across cancer pvalcox
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
 
 
+# across cancer con_index_p
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
 
 
+# across cancer bias_corrected_c_i
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+
+########################################################################## BRCA 
+brca <- scoresNormalPval[scoresNormalPval$cancer == 1,]
+# across cancer pvalcox
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+
+# kirc##########################################################################
+
+kirc <- scoresNormalPval[scoresNormalPval$cancer == 2,]
+# across cancer pvalcox
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+#############################################################################################
+# lihc
+lihc <- scoresNormalPval[scoresNormalPval$cancer == 3,]
+# across cancer pvalcox
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+# luad #############################################################################################
+
+luad<- scoresNormalPval[scoresNormalPval$cancer == 4,]
+# across cancer pvalcox
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+##########################################################################################################
+# Original data
+
+scoresNormalOrigPval <- read.csv(paste0(results_folder, '/scoresTwoThousandPval.csv'))
+
+scoresNormalOrigPval$method <- interaction(scoresNormalOrigPval$cluster,
+                                       scoresNormalOrigPval$impute, drop = TRUE)
+
+# across cancer pvalcox
+temp <- scoresNormalOrigPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- scoresNormalPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- scoresNormalOrigPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- scoresNormalOrigPval %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- scoresNormalOrigPval %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+
+########################################################################## BRCA 
+brca <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 1,]
+# across cancer pvalcox
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- brca %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+
+# kirc##########################################################################
+
+kirc <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 2,]
+# across cancer pvalcox
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- kirc %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+#############################################################################################
+# lihc
+lihc <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 3,]
+# across cancer pvalcox
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- lihc %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar
+
+# luad #############################################################################################
+
+luad<- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 4,]
+# across cancer pvalcox
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+# across cancer pvalcox
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPvalcox = mean(pvalcox, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('pvalcox') + theme_538_bar
+
+
+# across cancer con_index_p
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanCon_index_p = mean(con_index_p, na.rm = T),
+            meanCi = mean(ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer con_index_ci
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanCon_index_ci = mean(con_index_ci, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index_ci') + theme_538_bar
+
+
+# across cancer bias_corrected_c_i
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meanAcc = mean(acc, na.rm = T),
+            meanNmi = mean(nmi, na.rm = T),
+            meanPval = mean(pval, na.rm = T),
+            meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('con_index') + theme_538_bar
+
+# across cancer coef
+temp <- luad %>%
+  group_by(method) %>%
+  summarise(meancoef = mean(coefcox, na.rm = T),
+            meanse.std = mean(se.std, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('method'))
+
+ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('coef') + theme_538_bar

@@ -144,6 +144,7 @@ brca_union_snf_reg <- as.factor(t(read.table(paste0(similarityOrigFolder, '/brca
 
 # Hierarchical 
 brca_hier_stat <- rbind(
+  append('brca_com_hier', summary(as.factor(brca_com_hier))),
   append('brca_com_hier_knn', summary(as.factor(brca_com_hier_knn))),
   append('brca_com_hier_lls', summary(as.factor(brca_com_hier_lls))),
   append('brca_com_hier_lsa', summary(as.factor(brca_com_hier_lsa))),
@@ -157,6 +158,7 @@ brca_hier_stat <- rbind(
 
 # Icluster
 brca_iclust_stat <- rbind(
+  append('brca_com_iclust', summary(as.factor(brca_com_iclus))),
   append('brca_com_iclust_knn', summary(as.factor(brca_com_iclus_knn))),
   append('brca_com_iclust_lls', summary(as.factor(brca_com_iclus_lls))),
   append('brca_com_iclust_lsa', summary(as.factor(brca_com_iclus_lsa))),
@@ -224,15 +226,15 @@ brca_union_snf_reg <-  as.data.frame(cbind(label = brca_union_snf_reg, id = brca
 
 findCommonCluster <- function(data1, data2) {
   numClus <- 5
-  data_intersect_union <- data2[data2$id %in% data1$id,]
-  data_intersect <- left_join(data_intersect_union, data1, by = 'id')
+  data_intersect_union <- data2[data2$id %in% data1$id,] # intersection of union
+  data_intersect <- left_join(data_intersect_union, data1, by = 'id') # join intersection of union with intersection
   common_clusters <- matrix(,0,5)
   cluster_compare <- matrix(,0,5)
   for(i in 1:numClus){
-    sub_union <- data_intersect[data_intersect$label.x == i,]
+    sub_intersect <- data_intersect[data_intersect$label.y == i,]
     for(j in 1:numClus){
-      sub_intersect <- data_intersect[data_intersect$label.y == j,]
-      cluster_compare[j] <- round((sum(sub_union$id %in% sub_intersect$id)/nrow(sub_union))*100, 2)
+      sub_union <- data_intersect[data_intersect$label.x == j,]
+      cluster_compare[j] <- round((sum(sub_intersect$id %in% sub_union$id)/nrow(sub_intersect))*100, 2)
     }
     common_clusters <- rbind(common_clusters, cluster_compare)
   }
@@ -265,9 +267,9 @@ kirc_complete_ids <- kirc_ids[[1]]
 kirc_union_ids <- kirc_ids[[2]]
 
 # Get labels for each clustering type, from the intersection for kirc
-kirc_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/1_1.txt'))))
-kirc_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/1_2.txt'))))
-kirc_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/1_3.txt'))))
+kirc_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/2_1.txt'))))
+kirc_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/2_2.txt'))))
+kirc_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/2_3.txt'))))
 
 # get labels for kirc intersection imputed
 # hier
@@ -321,6 +323,7 @@ kirc_union_snf_reg <- as.factor(t(read.table(paste0(similarityOrigFolder, '/kirc
 
 # Hierarchical 
 kirc_hier_stat <- rbind(
+  append('kirc_com_hier', summary(as.factor(kirc_com_hier))),
   append('kirc_com_hier_knn', summary(as.factor(kirc_com_hier_knn))),
   append('kirc_com_hier_lls', summary(as.factor(kirc_com_hier_lls))),
   append('kirc_com_hier_lsa', summary(as.factor(kirc_com_hier_lsa))),
@@ -334,6 +337,7 @@ kirc_hier_stat <- rbind(
 
 # Icluster
 kirc_iclust_stat <- rbind(
+  append('kirc_com_iclust', summary(as.factor(kirc_com_iclus))),
   append('kirc_com_iclust_knn', summary(as.factor(kirc_com_iclus_knn))),
   append('kirc_com_iclust_lls', summary(as.factor(kirc_com_iclus_lls))),
   append('kirc_com_iclust_lsa', summary(as.factor(kirc_com_iclus_lsa))),
@@ -399,17 +403,18 @@ kirc_union_snf_self <-  as.data.frame(cbind(label = kirc_union_snf_self, id = ki
 kirc_union_snf_med <-  as.data.frame(cbind(label = kirc_union_snf_med, id = kirc_union_ids))
 kirc_union_snf_reg <-  as.data.frame(cbind(label = kirc_union_snf_reg, id = kirc_union_ids))
 
+
 findCommonCluster <- function(data1, data2) {
   numClus <- 5
-  data_intersect_union <- data2[data2$id %in% data1$id,]
-  data_intersect <- left_join(data_intersect_union, data1, by = 'id')
+  data_intersect_union <- data2[data2$id %in% data1$id,] # intersection of union
+  data_intersect <- left_join(data_intersect_union, data1, by = 'id') # join intersection of union with intersection
   common_clusters <- matrix(,0,5)
   cluster_compare <- matrix(,0,5)
   for(i in 1:numClus){
-    sub_union <- data_intersect[data_intersect$label.x == i,]
+    sub_intersect <- data_intersect[data_intersect$label.y == i,]
     for(j in 1:numClus){
-      sub_intersect <- data_intersect[data_intersect$label.y == j,]
-      cluster_compare[j] <- round((sum(sub_union$id %in% sub_intersect$id)/nrow(sub_union))*100, 2)
+      sub_union <- data_intersect[data_intersect$label.x == j,]
+      cluster_compare[j] <- round((sum(sub_intersect$id %in% sub_union$id)/nrow(sub_intersect))*100, 2)
     }
     common_clusters <- rbind(common_clusters, cluster_compare)
   }
@@ -441,9 +446,9 @@ lihc_complete_ids <- lihc_ids[[1]]
 lihc_union_ids <- lihc_ids[[2]]
 
 # Get labels for each clustering type, from the intersection for lihc
-lihc_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/1_1.txt'))))
-lihc_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/1_2.txt'))))
-lihc_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/1_3.txt'))))
+lihc_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/3_1.txt'))))
+lihc_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/3_2.txt'))))
+lihc_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/3_3.txt'))))
 
 # get labels for lihc intersection imputed
 # hier
@@ -497,6 +502,7 @@ lihc_union_snf_reg <- as.factor(t(read.table(paste0(similarityOrigFolder, '/lihc
 
 # Hierarchical 
 lihc_hier_stat <- rbind(
+  append('lihc_com_hier', summary(as.factor(lihc_com_hier))),
   append('lihc_com_hier_knn', summary(as.factor(lihc_com_hier_knn))),
   append('lihc_com_hier_lls', summary(as.factor(lihc_com_hier_lls))),
   append('lihc_com_hier_lsa', summary(as.factor(lihc_com_hier_lsa))),
@@ -510,6 +516,7 @@ lihc_hier_stat <- rbind(
 
 # Icluster
 lihc_iclust_stat <- rbind(
+  append('lihc_com_iclust', summary(as.factor(lihc_com_iclus))),
   append('lihc_com_iclust_knn', summary(as.factor(lihc_com_iclus_knn))),
   append('lihc_com_iclust_lls', summary(as.factor(lihc_com_iclus_lls))),
   append('lihc_com_iclust_lsa', summary(as.factor(lihc_com_iclus_lsa))),
@@ -575,17 +582,18 @@ lihc_union_snf_self <-  as.data.frame(cbind(label = lihc_union_snf_self, id = li
 lihc_union_snf_med <-  as.data.frame(cbind(label = lihc_union_snf_med, id = lihc_union_ids))
 lihc_union_snf_reg <-  as.data.frame(cbind(label = lihc_union_snf_reg, id = lihc_union_ids))
 
+
 findCommonCluster <- function(data1, data2) {
-  numClus <- 5
-  data_intersect_union <- data2[data2$id %in% data1$id,]
-  data_intersect <- left_join(data_intersect_union, data1, by = 'id')
-  common_clusters <- matrix(,0,5)
-  cluster_compare <- matrix(,0,5)
+  numClus <- 4
+  data_intersect_union <- data2[data2$id %in% data1$id,] # intersection of union
+  data_intersect <- left_join(data_intersect_union, data1, by = 'id') # join intersection of union with intersection
+  common_clusters <- matrix(,0,4)
+  cluster_compare <- matrix(,0,4)
   for(i in 1:numClus){
-    sub_union <- data_intersect[data_intersect$label.x == i,]
+    sub_intersect <- data_intersect[data_intersect$label.y == i,]
     for(j in 1:numClus){
-      sub_intersect <- data_intersect[data_intersect$label.y == j,]
-      cluster_compare[j] <- round((sum(sub_union$id %in% sub_intersect$id)/nrow(sub_union))*100, 2)
+      sub_union <- data_intersect[data_intersect$label.x == j,]
+      cluster_compare[j] <- round((sum(sub_intersect$id %in% sub_union$id)/nrow(sub_intersect))*100, 2)
     }
     common_clusters <- rbind(common_clusters, cluster_compare)
   }
@@ -617,9 +625,9 @@ luad_complete_ids <- luad_ids[[1]]
 luad_union_ids <- luad_ids[[2]]
 
 # Get labels for each clustering type, from the intersection for luad
-luad_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/1_1.txt'))))
-luad_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/1_2.txt'))))
-luad_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/1_3.txt'))))
+luad_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/4_1.txt'))))
+luad_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/4_2.txt'))))
+luad_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/4_3.txt'))))
 
 # get labels for luad intersection imputed
 # hier
@@ -673,6 +681,7 @@ luad_union_snf_reg <- as.factor(t(read.table(paste0(similarityOrigFolder, '/luad
 
 # Hierarchical 
 luad_hier_stat <- rbind(
+  append('luad_com_hier', summary(as.factor(luad_com_hier))),
   append('luad_com_hier_knn', summary(as.factor(luad_com_hier_knn))),
   append('luad_com_hier_lls', summary(as.factor(luad_com_hier_lls))),
   append('luad_com_hier_lsa', summary(as.factor(luad_com_hier_lsa))),
@@ -686,6 +695,7 @@ luad_hier_stat <- rbind(
 
 # Icluster
 luad_iclust_stat <- rbind(
+  append('luad_com_iclust', summary(as.factor(luad_com_iclus))),
   append('luad_com_iclust_knn', summary(as.factor(luad_com_iclus_knn))),
   append('luad_com_iclust_lls', summary(as.factor(luad_com_iclus_lls))),
   append('luad_com_iclust_lsa', summary(as.factor(luad_com_iclus_lsa))),
@@ -751,23 +761,23 @@ luad_union_snf_self <-  as.data.frame(cbind(label = luad_union_snf_self, id = lu
 luad_union_snf_med <-  as.data.frame(cbind(label = luad_union_snf_med, id = luad_union_ids))
 luad_union_snf_reg <-  as.data.frame(cbind(label = luad_union_snf_reg, id = luad_union_ids))
 
+
 findCommonCluster <- function(data1, data2) {
   numClus <- 5
-  data_intersect_union <- data2[data2$id %in% data1$id,]
-  data_intersect <- left_join(data_intersect_union, data1, by = 'id')
+  data_intersect_union <- data2[data2$id %in% data1$id,] # intersection of union
+  data_intersect <- left_join(data_intersect_union, data1, by = 'id') # join intersection of union with intersection
   common_clusters <- matrix(,0,5)
   cluster_compare <- matrix(,0,5)
   for(i in 1:numClus){
-    sub_union <- data_intersect[data_intersect$label.x == i,]
+    sub_intersect <- data_intersect[data_intersect$label.y == i,]
     for(j in 1:numClus){
-      sub_intersect <- data_intersect[data_intersect$label.y == j,]
-      cluster_compare[j] <- round((sum(sub_union$id %in% sub_intersect$id)/nrow(sub_union))*100, 2)
+      sub_union <- data_intersect[data_intersect$label.x == j,]
+      cluster_compare[j] <- round((sum(sub_intersect$id %in% sub_union$id)/nrow(sub_intersect))*100, 2)
     }
     common_clusters <- rbind(common_clusters, cluster_compare)
   }
   return(common_clusters)
 }
-
 luad_hier_knn_common <- findCommonCluster(luad_com_hier_knn, luad_union_hier_knn)
 luad_hier_lls_common <- findCommonCluster(luad_com_hier_lls, luad_union_hier_lls)
 luad_hier_lsa_common <- findCommonCluster(luad_com_hier_lsa, luad_union_hier_lsa)
