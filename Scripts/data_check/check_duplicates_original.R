@@ -4,6 +4,8 @@
 ######################################################################
 # Load libraries
 library(impute)
+library(SNFtool)
+library(survival)
 
 ######################################################################
 # Initialize folders
@@ -21,6 +23,8 @@ cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
 numFeat <- 2000
 argv <- 0
+cancer <- 'LUSC'
+cancerInd <- 5
 
 # Store the output in subfolders
 resultsFile <- paste(paste(argv, collapse="_"), ".txt", sep="")
@@ -63,7 +67,7 @@ for (v in 1:numViews) {
 }
 
 # Load the clinical data
-clinicalData <- loadData("clin")
+clinicalData<- loadData("clin")
 
 
 ######################################################################
@@ -81,17 +85,41 @@ transformIDFormat <- function(x) {
   return(x)
 }
 
+transformUnionId <- function(x) {
+  # Keep the first 12 characters
+  x <- substr(x, 1, 12)
+  
+  return(x)
+}
+
+
 # Extract all cases which appear in at least one of the data types
 unionData <- columnUnion(cases)
 
 # Subset the clinical data so that it corresponds to individuals
 # in the union data
+
+for (i in 1:3) {
+  temp.data  <- unionData[[i]]
+  temp.names <- transformUnionId(colnames(temp.data))
+  colnames(temp.data) <- temp.names
+  temp.data <- temp.data[, !duplicated(colnames(temp.data))]
+  unionData[[i]] <- temp.data
+}
+
+
 unionIDs <- colnames(unionData[[1]])
 unionIDs <- transformIDFormat(unionIDs)
-# Find the position of the patient IDs in the clinical data
 clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
-clinicalInd <- match(unionIDs, clinicalIDs)
-clinicalData <- clinicalData[clinicalInd, ]
+clinicalInd <- unionIDs %in% clinicalIDs
+unionInd <- clinicalIDs %in% unionIDs
+for (i in 1:3) {
+  temp.data  <- unionData[[i]]
+  temp.data <- temp.data[, clinicalInd]
+  unionData[[i]] <- temp.data
+}
+
+clinicalData <- clinicalData[unionInd, ]
 
 # Extract all cases which appear in all of the data types
 intersectedData <- columnIntersection(cases)
@@ -99,6 +127,12 @@ intersectedData <- columnIntersection(cases)
 ## Look at duplicates in clinical data
 clinicalData[duplicated(clinicalData$bcr_patient_barcode),]
 
+## remove duplicates and NAS
+
+!is.na(clinicalData$bcr_patient_barcode)
+
+clinicalData <- clinicalData[!is.na(clinicalData$bcr_patient_barcode),]
+clinicalData <- clinicalData[!duplicated(clinicalData$bcr_patient_barcode),]
 
 ######################################################################
 # Select a subset of features which differ most between cases and
@@ -178,13 +212,13 @@ intersectedData <- normalizeData(intersectedData, intersectedStat)
 # Evaluate the performance of the methods
 
 sampleRows <- FALSE
-clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+clusteringMethods <- c(#hierarchicalClustering, iClusterClustering,
                        SNFClustering)
-imputationMethods <- c(knnImputation, llsImputation, lsaImputation,
+imputationMethods <- c(#knnImputation, llsImputation, lsaImputation,
                        randomImputation)
 
 # Impute the missing data
-impute <- function(x) lsaImputation(x, sampleRows)
+impute <- function(x) knnImputation (x, sampleRows)
 imputedData <- impute(unionData)
 
 clusteringData <- list(imputedData, intersectedData)

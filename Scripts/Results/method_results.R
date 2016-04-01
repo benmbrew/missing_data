@@ -18,7 +18,8 @@ scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
 scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigInt.csv'))
 scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
-
+scoresNormalOrigDup <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup.csv'))
+scoresNormalOrigNA <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandNA.csv'))
 
 scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatOrig <- read.csv(paste0(results_folder, '/scoresCombatOrig.csv'))
@@ -37,6 +38,11 @@ scoresNormalOrigInt$method <- interaction(scoresNormalOrigInt$cluster,
                                        scoresNormalOrigInt$impute, drop = TRUE)
 scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
                                        scoresNormalOrigClust$impute, drop = TRUE)
+scoresNormalOrigDup$method <- interaction(scoresNormalOrigDup$cluster,
+                                            scoresNormalOrigDup$impute, drop = TRUE)
+scoresNormalOrigNA$method <- interaction(scoresNormalOrigNA$cluster,
+                                          scoresNormalOrigNA$impute, drop = TRUE)
+
 
 scoresCombat$method <- interaction(scoresCombat$cluster,
                                    scoresCombat$impute, drop = TRUE)
@@ -66,6 +72,10 @@ scoresCombatOrig$acc <- NULL
 scoresCombatOrig$nmi <- NULL
 scoresGenderOrig$acc <- NULL
 scoresGenderOrig$nmi <- NULL
+scoresNormalOrigDup$acc <- NULL
+scoresNormalOrigDup$nmi <- NULL
+scoresNormalOrigNA$acc <- NULL
+scoresNormalOrigNA$nmi <- NULL
 
 ####################################################################################################
 # Group by method and get mean for each evaluation method (acc, nmi, pval, ci)
@@ -80,7 +90,7 @@ groupbyMethod <- function(data, orig = FALSE, title) {
       
       temp_melt <- melt(temp, id.vars = c('method'))
       ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
-         xlab('Method') + ggtitle(title) + theme_538_bar
+         xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
       
   } else {
     
@@ -99,8 +109,10 @@ groupbyMethod <- function(data, orig = FALSE, title) {
 }
 
 
-groupbyMethod(scoresNormal, title = 'Complete Data')
-groupbyMethod(scoresNormalOrig, orig = TRUE, title = 'Original Data')
+groupbyMethod(scoresNormal, title = 'Intersection All Cancers')
+groupbyMethod(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
+groupbyMethod(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
+groupbyMethod(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
 groupbyMethod(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
 
 
@@ -112,6 +124,107 @@ groupbyMethod(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
 
 groupbyMethod(scoresGenderFemale, title = 'Complete Data with Female')
 groupbyMethod(scoresGenderOrigFemale, orig = TRUE, title = 'Original Data with Female')
+
+############################################################################################
+# Group by cluster
+
+groupbyCluster <- function(data, orig = FALSE, title) {
+  
+  if (orig) {
+    temp <- data %>%
+      group_by(cluster) %>%
+      summarise(meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('cluster'))
+    ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('cluster') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+  } else {
+    
+    temp <- data %>%
+      group_by(cluster) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('cluster'))
+    
+    ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('cluster') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+  }
+}
+
+
+groupbyCluster(scoresNormal, title = 'Intersection All Cancers')
+groupbyCluster(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
+groupbyCluster(scoresNormalOrigClust, orig = TRUE, title = 'Union')
+groupbyCluster(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
+groupbyCluster(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
+
+
+
+
+groupbyCluster(scoresCombat, title = 'Complete Data with Combat')
+groupbyCluster(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
+
+groupbyCluster(scoresGenderMale, title = 'Complete Data Male')
+groupbyCluster(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
+
+groupbyCluster(scoresGenderFemale, title = 'Complete Data with Female')
+groupbyCluster(scoresGenderOrigFemale, orig = TRUE, title = 'Original Data with Female')
+
+############################################################################################
+# Group by impute
+
+groupbyimpute <- function(data, orig = FALSE, title) {
+  
+  if (orig) {
+    temp <- data %>%
+      group_by(impute) %>%
+      summarise(meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('impute'))
+    ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('impute') + ylab('Mean Score') +  ggtitle(title) + theme_538_bar
+    
+  } else {
+    
+    temp <- data %>%
+      group_by(impute) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('impute'))
+    
+    ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('impute') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+  }
+}
+
+
+groupbyimpute(scoresNormal, title = 'Intersection All Cancers')
+groupbyimpute(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
+groupbyimpute(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
+groupbyimpute(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
+groupbyimpute(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
+
+
+
+
+groupbyimpute(scoresCombat, title = 'Complete Data with Combat')
+groupbyimpute(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
+
+groupbyimpute(scoresGenderMale, title = 'Complete Data Male')
+groupbyimpute(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
+
+groupbyimpute(scoresGenderFemale, title = 'Complete Data with Female')
+groupbyimpute(scoresGenderOrigFemale, orig = TRUE, title = 'Original Data with Female')
+
 
 ##################################################################################################
 # Group by cancer and method and mean of evaluation. 
@@ -127,7 +240,7 @@ groupbyCancer <- function(cancer, data, orig = FALSE, title) {
                 meanCi = mean(ci, na.rm = T))
     temp_melt <- melt(temp, id.vars = c('method'))
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title)
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ylab('Mean Score') + ggtitle(title)
     
   } else {
     
@@ -140,7 +253,59 @@ groupbyCancer <- function(cancer, data, orig = FALSE, title) {
     temp_melt <- melt(temp, id.vars = c('method'))
     
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title)
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ylab('Mean Score') + ggtitle(title)
+  }
+}
+
+groupbyCancer(cancer = 1, scoresNormal, title = 'Intersection BRCA')
+groupbyCancer(cancer = 2, scoresNormal, title = 'Intersection KIRC')
+groupbyCancer(cancer = 3, scoresNormal, title = 'Intersection LIHC')
+groupbyCancer(cancer = 4, scoresNormal, title = 'Intersection LUAD')
+
+groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'Union BRCA')
+groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'Union KIRC')
+groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'Union LIHC')
+groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'Union LUAD')
+
+groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, title = 'Union BRCA No Duplicates')
+groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, title = 'Union KIRC No Duplicates')
+groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, title = 'Union LIHC No Duplicates')
+groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, title = 'Union LUAD No Duplicates')
+
+groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrigNA, orig = TRUE, title = 'LUAD Original Data')
+
+
+##################################################################################################
+# Group by cancer and method and mean of evaluation. 
+groupbyCancer <- function(cancer, data, orig = FALSE, title) {
+  
+  temp_data <- data[data$cancer == cancer,]
+  
+  if (orig){
+    
+    temp <- temp_data %>%
+      group_by(cluster) %>%
+      summarise(meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    temp_melt <- melt(temp, id.vars = c('cluster'))
+    ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('cluster') + ggtitle(title)
+    
+  } else {
+    
+    temp <- temp_data %>%
+      group_by(cluster) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    temp_melt <- melt(temp, id.vars = c('cluster'))
+    
+    ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('cluster') + ggtitle(title)
   }
 }
 
@@ -153,6 +318,70 @@ groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'BRCA Original 
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'KIRC Original Data')
 groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'LIHC Original Data')
 groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'LUAD Original Data')
+
+groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, title = 'LUAD Original Data')
+
+groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrigNA, orig = TRUE, title = 'LUAD Original Data')
+
+
+
+##################################################################################################
+# Group by cancer and method and mean of evaluation. 
+groupbyCancer <- function(cancer, data, orig = FALSE, title) {
+  
+  temp_data <- data[data$cancer == cancer,]
+  
+  if (orig){
+    
+    temp <- temp_data %>%
+      group_by(impute) %>%
+      summarise(meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    temp_melt <- melt(temp, id.vars = c('impute'))
+    ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('impute') + ggtitle(title)
+    
+  } else {
+    
+    temp <- temp_data %>%
+      group_by(impute) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    temp_melt <- melt(temp, id.vars = c('impute'))
+    
+    ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('impute') + ggtitle(title)
+  }
+}
+
+groupbyCancer(cancer = 1, scoresNormal, title = 'BRCA Complete Data')
+groupbyCancer(cancer = 2, scoresNormal, title = 'KIRC Complete Data')
+groupbyCancer(cancer = 3, scoresNormal, title = 'LIHC Complete Data')
+groupbyCancer(cancer = 4, scoresNormal, title = 'LUAD Complete Data')
+
+groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'LUAD Original Data')
+
+groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, title = 'LUAD Original Data')
+
+groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, title = 'BRCA Original Data')
+groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, title = 'KIRC Original Data')
+groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, title = 'LIHC Original Data')
+groupbyCancer(cancer = 4, scoresNormalOrigNA, orig = TRUE, title = 'LUAD Original Data')
+
 
 
 ###############################################################################################################
@@ -266,6 +495,28 @@ temp_melt <- melt(temp, id.vars = c('method'))
 ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
   xlab('Method') + ggtitle('Intersection of Union') + theme_538_bar
 
+#Look at intersection
+temp <- scoresNormalOrigInt %>%
+  group_by(cluster) %>%
+  summarise(meanAcc = mean(intAcc, na.rm = T),
+            meanNmi = mean(intNmi, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('cluster'))
+
+ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('Intersection of Union') + theme_538_bar
+
+#Look at intersection
+temp <- scoresNormalOrigInt %>%
+  group_by(impute) %>%
+  summarise(meanAcc = mean(intAcc, na.rm = T),
+            meanNmi = mean(intNmi, na.rm = T))
+
+temp_melt <- melt(temp, id.vars = c('impute'))
+
+ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+  xlab('Method') + ggtitle('Intersection of Union') + theme_538_bar
+
 
 ## By Cancer
 groupByCancerInt <- function(cancer, title) {
@@ -287,6 +538,52 @@ groupByCancerInt(1, title = 'BRCA Intersection of Union')
 groupByCancerInt(2, title = 'KIRC Intersection of Union')
 groupByCancerInt(3, title = 'LIHC Intersection of Union')
 groupByCancerInt(4, title = 'LUAD Intersection of Union')
+
+
+## By Cancer
+groupByCancerInt <- function(cancer, title) {
+  temp.data <- scoresNormalOrigInt[scoresNormalOrigInt$cancer == cancer,]
+  
+  temp <- temp.data %>%
+    group_by(cluster) %>%
+    summarise(meanAcc = mean(intAcc, na.rm = T),
+              meanNmi = mean(intNmi, na.rm = T))
+  
+  temp_melt <- melt(temp, id.vars = c('cluster'))
+  
+  ggplot(data = temp_melt, aes(reorder(cluster, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title) + theme_538_bar
+  
+}
+
+groupByCancerInt(1, title = 'BRCA Intersection of Union')
+groupByCancerInt(2, title = 'KIRC Intersection of Union')
+groupByCancerInt(3, title = 'LIHC Intersection of Union')
+groupByCancerInt(4, title = 'LUAD Intersection of Union')
+
+
+## By Cancer
+groupByCancerInt <- function(cancer, title) {
+  temp.data <- scoresNormalOrigInt[scoresNormalOrigInt$cancer == cancer,]
+  
+  temp <- temp.data %>%
+    group_by(impute) %>%
+    summarise(meanAcc = mean(intAcc, na.rm = T),
+              meanNmi = mean(intNmi, na.rm = T))
+  
+  temp_melt <- melt(temp, id.vars = c('impute'))
+  
+  ggplot(data = temp_melt, aes(reorder(impute, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab('Method') + ggtitle(title) + theme_538_bar
+  
+}
+
+groupByCancerInt(1, title = 'BRCA Intersection of Union')
+groupByCancerInt(2, title = 'KIRC Intersection of Union')
+groupByCancerInt(3, title = 'LIHC Intersection of Union')
+groupByCancerInt(4, title = 'LUAD Intersection of Union')
+
+
 
 ######################################################################################################################
 # different measure of pvalue and ci
@@ -678,7 +975,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 ##########################################################################################################
 # Original data
 
-scoresNormalOrigPval <- read.csv(paste0(results_folder, '/scoresTwoThousandPval.csv'))
+scoresNormalOrigPval <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandPval.csv'))
 
 scoresNormalOrigPval$method <- interaction(scoresNormalOrigPval$cluster,
                                        scoresNormalOrigPval$impute, drop = TRUE)
@@ -686,9 +983,7 @@ scoresNormalOrigPval$method <- interaction(scoresNormalOrigPval$cluster,
 # across cancer pvalcox
 temp <- scoresNormalOrigPval %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPvalcox = mean(pvalcox, na.rm = T),
+  summarise(meanPvalcox = mean(pvalcox, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -698,11 +993,9 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 
 
 # across cancer con_index_p
-temp <- scoresNormalPval %>%
+temp <- scoresNormalOrigPval %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanCon_index_p = mean(con_index_p, na.rm = T),
+  summarise(meanCon_index_p = mean(con_index_p, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -713,9 +1006,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_ci
 temp <- scoresNormalOrigPval %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCon_index_ci = mean(con_index_ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -727,9 +1018,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer bias_corrected_c_i
 temp <- scoresNormalOrigPval %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -754,9 +1043,7 @@ brca <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 1,]
 # across cancer pvalcox
 temp <- brca %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPvalcox = mean(pvalcox, na.rm = T),
+  summarise(meanPvalcox = mean(pvalcox, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -768,9 +1055,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_p
 temp <- brca %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanCon_index_p = mean(con_index_p, na.rm = T),
+  summarise(meanCon_index_p = mean(con_index_p, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -781,9 +1066,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_ci
 temp <- brca %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCon_index_ci = mean(con_index_ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -795,9 +1078,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer bias_corrected_c_i
 temp <- brca %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -823,9 +1104,7 @@ kirc <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 2,]
 # across cancer pvalcox
 temp <- kirc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -836,9 +1115,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer pvalcox
 temp <- kirc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPvalcox = mean(pvalcox, na.rm = T),
+  summarise(meanPvalcox = mean(pvalcox, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -846,13 +1123,10 @@ temp_melt <- melt(temp, id.vars = c('method'))
 ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
   xlab('Method') + ggtitle('pvalcox') + theme_538_bar
 
-
 # across cancer con_index_p
 temp <- kirc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanCon_index_p = mean(con_index_p, na.rm = T),
+  summarise(meanCon_index_p = mean(con_index_p, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -863,9 +1137,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_ci
 temp <- kirc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCon_index_ci = mean(con_index_ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -877,9 +1149,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer bias_corrected_c_i
 temp <- kirc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -904,9 +1174,7 @@ lihc <- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 3,]
 # across cancer pvalcox
 temp <- lihc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -917,9 +1185,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer pvalcox
 temp <- lihc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPvalcox = mean(pvalcox, na.rm = T),
+  summarise(meanPvalcox = mean(pvalcox, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -931,9 +1197,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_p
 temp <- lihc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanCon_index_p = mean(con_index_p, na.rm = T),
+  summarise(meanCon_index_p = mean(con_index_p, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -944,9 +1208,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_ci
 temp <- lihc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCon_index_ci = mean(con_index_ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -958,9 +1220,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer bias_corrected_c_i
 temp <- lihc %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -985,9 +1245,7 @@ luad<- scoresNormalOrigPval[scoresNormalOrigPval$cancer == 4,]
 # across cancer pvalcox
 temp <- luad %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -998,9 +1256,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer pvalcox
 temp <- luad %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPvalcox = mean(pvalcox, na.rm = T),
+  summarise(meanPvalcox = mean(pvalcox, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -1012,9 +1268,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_p
 temp <- luad %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanCon_index_p = mean(con_index_p, na.rm = T),
+  summarise(meanCon_index_p = mean(con_index_p, na.rm = T),
             meanCi = mean(ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -1025,9 +1279,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer con_index_ci
 temp <- luad %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanCon_index_ci = mean(con_index_ci, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
@@ -1039,9 +1291,7 @@ ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) +
 # across cancer bias_corrected_c_i
 temp <- luad %>%
   group_by(method) %>%
-  summarise(meanAcc = mean(acc, na.rm = T),
-            meanNmi = mean(nmi, na.rm = T),
-            meanPval = mean(pval, na.rm = T),
+  summarise(meanPval = mean(pval, na.rm = T),
             meanBias_corrected_c_index = mean(bias_corrected_c_index, na.rm = T))
 
 temp_melt <- melt(temp, id.vars = c('method'))
