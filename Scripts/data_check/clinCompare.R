@@ -20,7 +20,7 @@ resultsFolder <- paste(projectFolder, 'Scripts/06_Results', sep = '/')
 # Initialize fixed variables
 jvmGBLimit <- 8
 # Initialize fixed variables
-cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD")
+cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
 numCores <- 12
 numFeat <- 2000
@@ -91,6 +91,8 @@ clinicalDataLIHC <- loadClinData(cancer = 'LIHC')
 clinicalDataLIHC <- extractRelevantColumns(clinicalDataLIHC)
 clinicalDataLUAD <- loadClinData(cancer = 'LUAD')
 clinicalDataLUAD <- extractRelevantColumns(clinicalDataLUAD)
+clinicalDataLUSC <- loadClinData(cancer = 'LUSC')
+clinicalDataLUSC <- extractRelevantColumns(clinicalDataLUSC)
 
 # remove patient from column names
 removePatients <- function(data) {
@@ -109,7 +111,7 @@ clinicalDataBRCA <- removePatients(clinicalDataBRCA)
 clinicalDataKIRC <- removePatients(clinicalDataKIRC)
 clinicalDataLIHC <- removePatients(clinicalDataLIHC)
 clinicalDataLUAD <- removePatients(clinicalDataLUAD)
-
+clinicalDataLUSC <- removePatients(clinicalDataLUSC)
 
 #########################################################################################
 # Load the original data
@@ -299,6 +301,13 @@ clinicalDataUnionLUAD <- LUADUnion[[2]]
 LUADComplete <- LUADComplete[[1]]
 LUADUnion <- LUADUnion[[1]]
 
+LUSCComplete <- loadData(cancer = 'LUSC', clinicalDataLUSC, complete = TRUE)
+LUSCUnion <- loadData(cancer = 'LUSC', clinicalDataLUSC, complete = FALSE)
+clinicalDataCompleteLUSC <- LUSCComplete[[2]] 
+clinicalDataUnionLUSC <- LUSCUnion[[2]]
+LUSCComplete <- LUSCComplete[[1]]
+LUSCUnion <- LUSCUnion[[1]]
+
 
 ####################################################################################
 # extract samples in union that are not in intersection for each data type 
@@ -313,6 +322,9 @@ clinLihc <- clinicalDataUnionLIHC[!clinicalDataUnionLIHC$bcr_patient_barcode %in
 
 clinLuad <- clinicalDataUnionLUAD[!clinicalDataUnionLUAD$bcr_patient_barcode %in% 
                                     clinicalDataCompleteLUAD$bcr_patient_barcode,]
+
+clinLusc <- clinicalDataUnionLUSC[!clinicalDataUnionLUSC$bcr_patient_barcode %in% 
+                                    clinicalDataCompleteLUSC$bcr_patient_barcode,]
 
 ####################################################################################
 # summary statistics, histograms, for clinical data in the intersection
@@ -334,6 +346,8 @@ clinLihc <- dataStructure(clinLihc)
 clinicalDataCompleteLIHC <- dataStructure(clinicalDataCompleteLIHC) 
 clinLuad <- dataStructure(clinLuad)
 clinicalDataCompleteLUAD <- dataStructure(clinicalDataCompleteLUAD) 
+clinLusc <- dataStructure(clinLusc)
+clinicalDataCompleteLUSC <- dataStructure(clinicalDataCompleteLUSC) 
 
 
 # dimension of data 
@@ -345,6 +359,8 @@ dim(clinicalDataUnionLIHC) # 377
 dim(clinicalDataCompleteLIHC) #284
 dim(clinicalDataUnionLUAD) # 529
 dim(clinicalDataCompleteLUAD) # 430
+dim(clinicalDataUnionLUSC) # 529
+dim(clinicalDataCompleteLUSC) # 430
 
 #########################################################################################
 # Barplots of all vital_status and gender (with NAs) for complete data (clinicalDataComplete) and not complete (clin)
@@ -381,6 +397,8 @@ groupByVital(clinicalDataCompleteBRCA,clinBrca, title = 'BRCA Complete')
 groupByVital(clinicalDataCompleteKIRC,clinKirc, title = 'KIRC Complete')
 groupByVital(clinicalDataCompleteLIHC,clinLihc, title = 'LIHC Complete')
 groupByVital(clinicalDataCompleteLUAD,clinLuad, title = 'LUAD Complete')
+groupByVital(clinicalDataCompleteLUSC,clinLusc, title = 'LUSC Complete')
+
 
 
 # group by gender and return a bargraph of alive, dead, and NAs percentage for complete and left out clinical ids.
@@ -416,6 +434,8 @@ groupByGender(clinicalDataCompleteBRCA,clinBrca, title = 'BRCA Complete')
 groupByGender(clinicalDataCompleteKIRC,clinKirc, title = 'KIRC Complete')
 groupByGender(clinicalDataCompleteLIHC,clinLihc, title = 'LIHC Complete')
 groupByGender(clinicalDataCompleteLUAD,clinLuad, title = 'LUAD Union')
+groupByGender(clinicalDataCompleteLUSC,clinLusc, title = 'LUSC Union')
+
 
 ##############################################################################################
 # Histograms of days_to_death 
@@ -434,7 +454,7 @@ daysToDeath(clinBrca, title = 'BRCA Not in Intersection', column = 'Days To Deat
 # KIRC
 daysToDeath(clinicalDataCompleteKIRC, title = 'KIRC Complete', column = 'Days To Death')
 daysToDeath(clinKirc, title = 'KIRC Not in Intersection', column = 'Days To Death')
-daysToDeath <- f
+
 # LIHC
 daysToDeath(clinicalDataCompleteLIHC, title = 'LIHC Complete', column = 'Days To Death')
 daysToDeath(clinLihc, title = 'LIHC Not in Intersection', column = 'Days To Death')
@@ -442,6 +462,10 @@ daysToDeath(clinLihc, title = 'LIHC Not in Intersection', column = 'Days To Deat
 #LUAD
 daysToDeath(clinicalDataCompleteLUAD, title = 'LUAD Complete', column = 'Days To Death')
 daysToDeath(clinLuad, title = 'LUAD Not in Intersection', column = 'Days To Death')
+
+#LUSC
+daysToDeath(clinicalDataCompleteLUSC, title = 'LUSC Complete', column = 'Days To Death')
+daysToDeath(clinLusc, title = 'LUSC Not in Intersection', column = 'Days To Death')
 
 
 ######################################################################################################
@@ -470,6 +494,10 @@ daysToLastFollowUp(clinLihc, title = 'LIHC Not in Intersection', column = 'Days 
 #LUAD
 daysToLastFollowUp(clinicalDataCompleteLUAD, title = 'LUAD Complete', column = 'Days To Last Follow Up')
 daysToLastFollowUp(clinLuad, title = 'LUAD Not in Intersection', column = 'Days To Last Follow Up')
+
+#LUSC
+daysToLastFollowUp(clinicalDataCompleteLUSC, title = 'LUSC Complete', column = 'Days To Last Follow Up')
+daysToLastFollowUp(clinLusc, title = 'LUSC Not in Intersection', column = 'Days To Last Follow Up')
 
 
 ##########################################################################################################
@@ -503,6 +531,9 @@ survObject(clinLihc, 'LIHC Not in Intersection')
 
 survObject(clinicalDataCompleteLUAD, 'LUAD')
 survObject(clinLuad, 'LUAD Not in Intersection')
+
+survObject(clinicalDataCompleteLUSC, 'LUSC')
+survObject(clinLusc, 'LUSC Not in Intersection')
 ###########################################################################################
 # Create a function to add survTime to clinicalDataComplete.... and clin....
 addSurv <- function(data) {
@@ -522,13 +553,15 @@ clinicalDataCompleteLIHC <- addSurv(clinicalDataCompleteLIHC)
 clinLihc <- addSurv(clinLihc)
 clinicalDataCompleteLUAD <- addSurv(clinicalDataCompleteLUAD)
 clinLuad <- addSurv(clinLuad)
-
+clinicalDataCompleteLUSC <- addSurv(clinicalDataCompleteLUSC)
+clinLusc <- addSurv(clinLusc)
 
 
 ###########################################################################################
 # Look at relative difference between percentiles. 
 # percent difference for each 
-Difference <- function(column, title) {
+Difference <- function(column, title, survObject = FALSE) {
+  
   if(column == 'vital_status'){
     
     temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$vital_status == 'alive'),])/
@@ -542,7 +575,10 @@ Difference <- function(column, title) {
                               (nrow(clinLihc[which(clinLihc$vital_status == 'alive'),])/nrow(clinLihc))*100, 2)
     temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$vital_status == 'alive'),])/
                                nrow(clinicalDataCompleteLUAD))*100 - 
-                              (nrow(clinLuad[which(clinLuad$vital_status == 'alive'),])/nrow(clinLuad))*100, 2) 
+                              (nrow(clinLuad[which(clinLuad$vital_status == 'alive'),])/nrow(clinLuad))*100, 2)
+    temp.diff_LUSC <- round((nrow(clinicalDataCompleteLUSC[which(clinicalDataCompleteLUSC$vital_status == 'alive'),])/
+                               nrow(clinicalDataCompleteLUSC))*100 - 
+                              (nrow(clinLusc[which(clinLusc$vital_status == 'alive'),])/nrow(clinLusc))*100, 2)
   
   } else if (column == 'gender') {
     temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$gender == 'female'),])/
@@ -557,26 +593,96 @@ Difference <- function(column, title) {
     temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$gender == 'female'),])/
                                nrow(clinicalDataCompleteLUAD))*100 - 
                               (nrow(clinLuad[which(clinLuad$gender == 'female'),])/nrow(clinLuad))*100, 2)
+    temp.diff_LUSC <- round((nrow(clinicalDataCompleteLUSC[which(clinicalDataCompleteLUSC$gender == 'female'),])/
+                               nrow(clinicalDataCompleteLUSC))*100 - 
+                              (nrow(clinLusc[which(clinLusc$gender == 'female'),])/nrow(clinLusc))*100, 2)
   
   } else {
+    
+    if (survObject) {
+      
+      imputeDiff <- function(data) {
+      data <- data[!is.na(data$vital_status),]
+        for (i in 1:nrow(data)) {
+          sub_dat <- data[i,]
+          if (sub_dat$vital_status == 'alive') {
+            sub_dat$survTime <- max(data$survTime, na.rm = T)
+          } 
+          data[i,] <- sub_dat
+        }
+        return(data)
+     }
+     
+      clinicalDataCompleteBRCA <- imputeDiff(clinicalDataCompleteBRCA)
+      clinBrca <- imputeDiff(clinBrca)
+      clinicalDataCompleteKIRC <- imputeDiff(clinicalDataCompleteKIRC)
+      clinKirc <- imputeDiff(clinKirc)
+      clinicalDataCompleteLIHC <- imputeDiff(clinicalDataCompleteLIHC)
+      clinLihc <- imputeDiff(clinLihc)
+      clinicalDataCompleteLUAD <- imputeDiff(clinicalDataCompleteLUAD)
+      clinLuad <- imputeDiff(clinLuad)
+      clinicalDataCompleteLUSC <- imputeDiff(clinicalDataCompleteLUSC)
+      clinLusc <- imputeDiff(clinLusc)
+      
+    }
   temp.diff_BRCA <- mean(clinicalDataCompleteBRCA[, column], na.rm= T) - mean(clinBrca[, column], na.rm= T)
   temp.diff_KIRC <- mean(clinicalDataCompleteKIRC[, column], na.rm= T) - mean(clinKirc[, column], na.rm= T)
   temp.diff_LIHC <- mean(clinicalDataCompleteLIHC[, column], na.rm= T) - mean(clinLihc[, column], na.rm= T)
   temp.diff_LUAD <- mean(clinicalDataCompleteLUAD[, column], na.rm= T) - mean(clinLuad[, column], na.rm= T)
+  temp.diff_LUSC <- mean(clinicalDataCompleteLUSC[, column], na.rm= T) - mean(clinLusc[, column], na.rm= T)
+  
   }
   
-  temp <- data.frame(x = c('BRCA', 'KIRC', 'LIHC', 'LUAD'), y = c(temp.diff_BRCA, temp.diff_KIRC, temp.diff_LIHC, temp.diff_LUAD))
+  temp <- data.frame(x = c('BRCA', 'KIRC', 'LIHC', 'LUAD', 'LUSC'), y = c(temp.diff_BRCA, temp.diff_KIRC, temp.diff_LIHC, temp.diff_LUAD, temp.diff_LUSC))
   
   ggplot(temp, aes(x, y)) + geom_bar(stat = 'identity') + ggtitle(title) + theme_538_bar + 
-    ylab('Difference')
+    ylab('Avg Difference') + xlab('Cancer')
 
 }
 
 Difference(column = 'days_to_death', title = 'Difference in Avg days_to_death between complete and not complete')
 Difference(column = 'days_to_last_followup', title = 'Difference in Avg days_to_last_followup between complete and not complete')
 Difference(column = 'survTime', title = 'Difference in Avg Survial Time between complete and not complete')
-Difference(column = 'vital_status', title = 'Difference in Percent Alive between complete and not complete')
+Difference(column = 'survTime', title = 'Difference in Avg Survial Time between complete and not complete')
+Difference(column = 'vital_status', title = 'Difference in Percent Alive between complete and not complete', survObject = TRUE)
 Difference(column = 'gender', title = 'Difference in Percent Female between complete and not complete')
+##########################################################################################
+# modify survTime column so that "alive" in the vital_status gives max of survTime
+imputeDiff <- function(data) {
+  for (i in 1:nrow(data)) {
+    sub_dat <- data[i,]
+    if (sub_dat$vital_status == 'alive') {
+      sub_dat$survTime <- max(data$survTime)
+    } 
+    data[i,] <- sub_dat
+  }
+  return(data)
+}
+
+clinicalDataCompleteBRCA <- imputeDiff
+# apply the function. now each data set has a survTime column
+clinicalDataCompleteBRCA$survTime 
+clinBrca$survTime
+clinicalDataCompleteKIRC$survTime 
+clinKirc$survTime <- 
+clinicalDataCompleteLIHC$survTime 
+clinLihc$survTime <- 
+clinicalDataCompleteLUAD$survTime <-
+clinLuad$survTime <- 
+clinicalDataCompleteLUSC$survTime <- 
+clinLusc$survTime <- 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #############################################################################################

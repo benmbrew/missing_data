@@ -1,5 +1,5 @@
 ################################################################################################
-# This script will take the results from all folder and make barplots for each strategy and method 
+ # This script will take the results from all folder and make barplots for each strategy and method 
 library(ggplot2)
 library(reshape2)
 library(dplyr)
@@ -20,9 +20,17 @@ scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIn
 scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
 scoresNormalOrigDup <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup.csv'))
 scoresNormalOrigNA <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandNA.csv'))
+scoresLUSCOrigDup <- read.csv(paste0(results_folder, '/scoresLUSCOrigDup.csv'))
+scoresNormalOrigDupSeed <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandSeed.csv'))
+
+
 
 scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatOrig <- read.csv(paste0(results_folder, '/scoresCombatOrig.csv'))
+scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv'))
+scoresCombatOrigDupSeed <- read.csv(paste0(results_folder, '/scoresCombatOrigDupSeed.csv'))
+
+
 
 scoresGender <- read.csv(paste0(results_folder, '/scoresGender.csv'))
 scoresGenderOrig <- read.csv(paste0(results_folder, '/scoresGenderOrig.csv'))
@@ -34,23 +42,42 @@ scoresNormal$method <- interaction(scoresNormal$cluster,
 
 scoresNormalOrig$method <- interaction(scoresNormalOrig$cluster,
                                    scoresNormalOrig$impute, drop = TRUE)
+
 scoresNormalOrigInt$method <- interaction(scoresNormalOrigInt$cluster,
                                        scoresNormalOrigInt$impute, drop = TRUE)
+
 scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
                                        scoresNormalOrigClust$impute, drop = TRUE)
+
 scoresNormalOrigDup$method <- interaction(scoresNormalOrigDup$cluster,
                                             scoresNormalOrigDup$impute, drop = TRUE)
+
 scoresNormalOrigNA$method <- interaction(scoresNormalOrigNA$cluster,
                                           scoresNormalOrigNA$impute, drop = TRUE)
 
 
+scoresLUSCOrigDup$method <- interaction(scoresLUSCOrigDup$cluster,
+                                 scoresLUSCOrigDup$impute, drop = TRUE)
+
+
+scoresNormalOrigDupSeed$method <- interaction(scoresNormalOrigDupSeed$cluster,
+                                       scoresNormalOrigDupSeed$impute, drop = TRUE)
+
 scoresCombat$method <- interaction(scoresCombat$cluster,
-                                   scoresCombat$impute, drop = TRUE)
+                            scoresCombat$impute, drop = TRUE)
+
 scoresCombatOrig$method <- interaction(scoresCombatOrig$cluster,
-                                       scoresCombatOrig$impute, drop = TRUE)
+                                scoresCombatOrig$impute, drop = TRUE)
+
+scoresCombatOrigDup$method <- interaction(scoresCombatOrigDup$cluster,
+                                   scoresCombatOrigDup$impute, drop = TRUE)
+
+scoresCombatOrigDupSeed$method <- interaction(scoresCombatOrigDupSeed$cluster,
+                                       scoresCombatOrigDupSeed$impute, drop = TRUE)
 
 scoresGender$method <- interaction(scoresGender$cluster,
                                    scoresGender$impute, drop = TRUE)
+
 scoresGenderOrig$method <- interaction(scoresGenderOrig$cluster,
                                        scoresGenderOrig$impute, drop = TRUE)
 
@@ -112,12 +139,9 @@ groupbyMethod <- function(data, orig = FALSE, title) {
 groupbyMethod(scoresNormal, title = 'Intersection All Cancers')
 groupbyMethod(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
 groupbyMethod(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
+groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, title = 'Union All Cancers with Seeds and duplications removed')
 groupbyMethod(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
 groupbyMethod(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
-
-
-groupbyMethod(scoresCombat, title = 'Complete Data with Combat')
-groupbyMethod(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
 
 groupbyMethod(scoresGenderMale, title = 'Complete Data Male')
 groupbyMethod(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
@@ -159,15 +183,16 @@ groupbyCluster <- function(data, orig = FALSE, title) {
 
 groupbyCluster(scoresNormal, title = 'Intersection All Cancers')
 groupbyCluster(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
-groupbyCluster(scoresNormalOrigClust, orig = TRUE, title = 'Union')
+groupbyCluster(scoresNormalOrigDupSeed, orig = TRUE, title = 'Union All Cancers with Seeds and duplications removed')
 groupbyCluster(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
 groupbyCluster(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
-
-
-
+groupbyCluster(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
+groupbyCluster(scoresLUSCOrigDup, orig = TRUE, title = 'LUSC Original Data')
 
 groupbyCluster(scoresCombat, title = 'Complete Data with Combat')
 groupbyCluster(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
+groupbyCluster(scoresCombatOrigDup, orig = TRUE, title = 'Original Data with Combat, Revoed Dups')
+groupbyCluster(scoresCombatOrigDupSeed, orig = TRUE, title = 'Original Data with Combat, Removed Dups and random')
 
 groupbyCluster(scoresGenderMale, title = 'Complete Data Male')
 groupbyCluster(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
@@ -209,15 +234,19 @@ groupbyimpute <- function(data, orig = FALSE, title) {
 
 groupbyimpute(scoresNormal, title = 'Intersection All Cancers')
 groupbyimpute(scoresNormalOrig, orig = TRUE, title = 'Union All Cancers')
-groupbyimpute(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
+groupbyimpute(scoresNormalOrigDupSeed, orig = TRUE, title = 'Union All Cancers with Seeds and duplications removed')
 groupbyimpute(scoresNormalOrigDup, orig = TRUE, title = 'Union No Duplicates All Cancers')
 groupbyimpute(scoresNormalOrigNA, orig = TRUE, title = 'Original Data')
-
-
+groupbyimpute(scoresNormalOrigClust, orig = TRUE, title = 'Original Data')
+groupbyimpute(scoresLUSCOrigDup, orig = TRUE, title = 'LUSC Original Data')
 
 
 groupbyimpute(scoresCombat, title = 'Complete Data with Combat')
 groupbyimpute(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
+groupbyimpute(scoresCombatOrigDup, orig = TRUE, title = 'Original Data with Combat, Revoed Dups')
+groupbyimpute(scoresCombatOrigDupSeed, orig = TRUE, title = 'Original Data with Combat, Removed Dups and random')
+
+
 
 groupbyimpute(scoresGenderMale, title = 'Complete Data Male')
 groupbyimpute(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
@@ -225,7 +254,7 @@ groupbyimpute(scoresGenderOrigMale, orig = TRUE, title = 'Original Data Male')
 groupbyimpute(scoresGenderFemale, title = 'Complete Data with Female')
 groupbyimpute(scoresGenderOrigFemale, orig = TRUE, title = 'Original Data with Female')
 
-
+###############################
 ##################################################################################################
 # Group by cancer and method and mean of evaluation. 
 groupbyCancer <- function(cancer, data, orig = FALSE, title) {
@@ -257,25 +286,39 @@ groupbyCancer <- function(cancer, data, orig = FALSE, title) {
   }
 }
 
+
 groupbyCancer(cancer = 1, scoresNormal, title = 'Intersection BRCA')
-groupbyCancer(cancer = 2, scoresNormal, title = 'Intersection KIRC')
-groupbyCancer(cancer = 3, scoresNormal, title = 'Intersection LIHC')
-groupbyCancer(cancer = 4, scoresNormal, title = 'Intersection LUAD')
-
 groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, title = 'Union BRCA')
-groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'Union KIRC')
-groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'Union LIHC')
-groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'Union LUAD')
-
 groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, title = 'Union BRCA No Duplicates')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, title = 'Union KIRC No Duplicates')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, title = 'Union LIHC No Duplicates')
-groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, title = 'Union LUAD No Duplicates')
-
+groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, title = 'Union BRCA No Duplicates')
 groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, title = 'BRCA Original Data')
+
+groupbyCancer(cancer = 2, scoresNormal, title = 'Intersection KIRC')
+groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, title = 'Union KIRC')
+groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, title = 'Union KIRC No Duplicates')
+groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, title = 'Union KIRC No Duplicates')
 groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, title = 'KIRC Original Data')
+groupbyMethod(scoresCombat, title = 'Complete Data with Combat')
+groupbyMethod(scoresCombatOrig, orig = TRUE, title = 'Original Data with Combat')
+groupbyMethod(scoresCombatOrigDup, orig = TRUE, title = 'Original Data with Combat, Revoed Dups')
+groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, title = 'Original Data with Combat, Removed Dups and random')
+
+groupbyCancer(cancer = 3, scoresNormal, title = 'Intersection LIHC')
+groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, title = 'Union LIHC')
+groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, title = 'Union LIHC No Duplicates')
+groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, title = 'Union LIHC No Duplicates')
 groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, title = 'LIHC Original Data')
+
+groupbyCancer(cancer = 4, scoresNormal, title = 'Intersection LUAD')
+groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, title = 'Union LUAD')
+groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, title = 'Union LUAD No Duplicates')
+groupbyCancer(cancer = 4, scoresNormalOrigDupSeed, orig = TRUE, title = 'Union LUAD No Duplicates')
 groupbyCancer(cancer = 4, scoresNormalOrigNA, orig = TRUE, title = 'LUAD Original Data')
+
+
+groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, title = 'LUSC Original Data')
+
+
 
 
 ##################################################################################################
@@ -462,6 +505,13 @@ groupbyPval(scoresNormalOrig, title = 'Union Data KIRC', cancer = 2)
 groupbyPval(scoresNormalOrig, title = 'Union Data LIHC', cancer = 3)
 groupbyPval(scoresNormalOrig, title = 'Union Data LUAD', cancer = 4)
 
+groupbyPval(scoresNormalOrigDupSeed, title = 'Union Data BRCA Dup/Seed', cancer = 1)
+groupbyPval(scoresNormalOrigDupSeed, title = 'Union Data KIRC Dup/Seed', cancer = 2)
+groupbyPval(scoresNormalOrigDupSeed, title = 'Union Data LIHC Dup/Seed' cancer = 3)
+groupbyPval(scoresNormalOrigDupSeed, title = 'Union Data LUAD Dup/Seed', cancer = 4)
+groupbyPval(scoresLUSCOrigDup, title = 'Union Data LUSC Dup/Seed', cancer = 5)
+
+
 groupbyPval(scoresNormalOrigClust, title = 'Union Data BRCA Clust', cancer = 1)
 groupbyPval(scoresNormalOrigClust, title = 'Union Data KIRC Clust', cancer = 2)
 groupbyPval(scoresNormalOrigClust, title = 'Union Data LIHC Clust', cancer = 3)
@@ -473,6 +523,8 @@ groupbyPval(scoresNormalOrigClust, title = 'Original Data')
 
 
 groupbyPval(scoresCombat, title = 'KIRC Complete with Combat')
+groupbyPval(scoresCombatOrig, title = 'KIRC Original with Combat')
+groupbyPval(scoresCombatOrigDupSeed, title = 'KIRC Complete with Combat/Seed')
 groupbyPval(scoresCombatOrig, title = 'KIRC Original with Combat')
 groupbyPval(scoresCombat, scoresNormal, data_indicator = 'Combat', title = 'KIRC Complete with Combat and Normal')
 groupbyPval(scoresCombatOrig, scoresNormalOrig, data_indicator = 'Combat', title = 'KIRC Original with Combat and Normal')
