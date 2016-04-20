@@ -15,7 +15,7 @@ resultsFolder <- paste(testFolder, "Results", sep="/")
 # Initialize fixed variables
 jvmGBLimit <- 8
 # Initialize fixed variables
-cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD")
+cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD","LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
 numCores <- 12
 numFeat <- 2000
@@ -84,6 +84,9 @@ clinicalDataLIHC <- loadClinData(cancer = 'LIHC')
 # clinicalDataLIHC <- extractRelevantColumns(clinicalDataLIHC)
 clinicalDataLUAD <- loadClinData(cancer = 'LUAD')
 # clinicalDataLUAD <- extractRelevantColumns(clinicalDataLUAD)
+clinicalDataLUSC <- loadClinData(cancer = 'LUSC')
+# clinicalDataLUAD <- extractRelevantColumns(clinicalDataLUAD)
+
 
 # # remove patient from column names
 # removePatients <- function(data) {
@@ -145,7 +148,7 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
     
     # find the position of the patient IDS in the clinical data 
     clinicalData <- as.data.frame(clinicalData) # not in Daniel's original code 
-    clinicalIds <- as.character(clinicalData$bcr_patient_barcode)
+    clinicalIds <- as.character(clinicalData$patient.bcr_patient_barcode)
     clinicalInd <- match(completeIds, clinicalIds) # returns a vector of positions of (first) matches of its 
     # first argument in its second. Takes length of x with positions of y. NA where x is not in y. So this will
     # be length of complete_ids with position of clinical ids where they match.
@@ -172,86 +175,86 @@ loadData <- function(cancer, clinicalData, complete = FALSE){
     unionIDs <- colnames(unionData[[1]])
     unionIDs <- transformIDFormat(unionIDs)
     # Find the position of the patient IDs in the clinical data
-    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    clinicalIDs <- as.character(clinicalData$patient.bcr_patient_barcode)
     clinicalInd <- match(unionIDs, clinicalIDs)
     clinicalData <- clinicalData[clinicalInd, ]
     
   }
+#   
+#   Select a subset of features which differ most between cases and
+#   controls.
   
-  # Select a subset of features which differ most between cases and
-  # controls.
-  
-  #   featureSubsetIndices <- function(cases, subsetSize=numFeat) {
-  #     numViews <- length(cases)
-  #     featureSubsetInd <- vector("list", numViews)
-  #     
-  #     for (v in 1:numViews) {
-  #       # Calculate the t-test p-value for each feature, grouped by cases
-  #       # and controls
-  #       numFeatures <- nrow(cases[[v]])
-  #       pval <- sapply(1:numFeatures,
-  #                      function(i) t.test(cases[[v]][i, ],
-  #                                         controls[[v]][i, ])$p.value)
-  #       
-  #       # Subset the data keeping the features with the smallest p-values
-  #       ind <- order(pval)
-  #       featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
-  #     }
-  #     
-  #     return(featureSubsetInd)
-  #   }
+    featureSubsetIndices <- function(cases, subsetSize=numFeat) {
+      numViews <- length(cases)
+      featureSubsetInd <- vector("list", numViews)
+      
+      for (v in 1:numViews) {
+        # Calculate the t-test p-value for each feature, grouped by cases
+        # and controls
+        numFeatures <- nrow(cases[[v]])
+        pval <- sapply(1:numFeatures,
+                       function(i) t.test(cases[[v]][i, ],
+                                          controls[[v]][i, ])$p.value)
+        
+        # Subset the data keeping the features with the smallest p-values
+        ind <- order(pval)
+        featureSubsetInd[[v]] <- ind[1:min(subsetSize, numFeatures)]
+      }
+      
+      return(featureSubsetInd)
+    }
+    
+    subsetData <- function(data, ind) {
+      
+      for (v in 1:length(data)) {
+        data[[v]] <- data[[v]][ind[[v]], ]
+      }
+      
+      return(data)
+    }
+    
+   if (complete){
+      completeInd <- featureSubsetIndices(completeData)
+      completeData <- subsetData(completeData, completeInd)
+      } else {
+      unionInd <- featureSubsetIndices(unionData)
+      unionData <- subsetData(unionData, unionInd)
+      }
   #   
-  #   subsetData <- function(data, ind) {
-  #     
-  #     for (v in 1:length(data)) {
-  #       data[[v]] <- data[[v]][ind[[v]], ]
-  #     }
-  #     
-  #     return(data)
-  #   }
-  #   
-  #  if (complete){
-  #     completeInd <- featureSubsetIndices(completeData)
-  #     completeData <- subsetData(completeData, completeInd)
-  #     } else {
-  #     unionInd <- featureSubsetIndices(unionData)
-  #     unionData <- subsetData(unionData, unionInd)
-  #     }
-  # #   
-  #   ####################################################################################
-  # #   Normalize the features in the data sets.
-  # #   Normalization is performed before imputation and we expect that the
-  # #   data will still be normalized after imputation (before clustering).
-  #     rowStatistics <- function(cases){
-  #       num_views <- length(cases)
-  #       row_stats <- vector('list', num_views)
-  #       
-  #       for(v in 1:num_views){
-  #         #calculate the row means and std deviations 
-  #         row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
-  #         row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
-  #         constant_ind <- row_sd == 0
-  #         row_sd[constant_ind] <- 1
-  #         row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
-  #       }
-  #       return(row_stats)
-  #     }
-  #     
-  #     normalizeData <- function(data, stat){
-  #       for(v in 1:length(data)) {
-  #         data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
-  #         data[[v]] <- data[[v]][!stat[[v]]$ind, ]
-  #       }
-  #       return(data)
-  #     }
-  #     
-  #    if (complete) {
-  #       completeStat <- rowStatistics(completeData)
-  #       completeData <- normalizeData(completeData, completeStat)
-  #     } else {
-  #     unionStat <- rowStatistics(unionData)
-  #     unionData <- normalizeData(unionData, unionStat)
-  #     }
+    ####################################################################################
+  #   Normalize the features in the data sets.
+  #   Normalization is performed before imputation and we expect that the
+  #   data will still be normalized after imputation (before clustering).
+      rowStatistics <- function(cases){
+        num_views <- length(cases)
+        row_stats <- vector('list', num_views)
+        
+        for(v in 1:num_views){
+          #calculate the row means and std deviations 
+          row_mean <- apply(cases[[v]], 1, mean, na.rm = T)
+          row_sd <- apply(cases[[v]], 1, sd, na.rm = T)
+          constant_ind <- row_sd == 0
+          row_sd[constant_ind] <- 1
+          row_stats[[v]] <- list(mean = row_mean, sd = row_sd, ind = constant_ind)
+        }
+        return(row_stats)
+      }
+      
+      normalizeData <- function(data, stat){
+        for(v in 1:length(data)) {
+          data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
+          data[[v]] <- data[[v]][!stat[[v]]$ind, ]
+        }
+        return(data)
+      }
+      
+     if (complete) {
+        completeStat <- rowStatistics(completeData)
+        completeData <- normalizeData(completeData, completeStat)
+      } else {
+      unionStat <- rowStatistics(unionData)
+      unionData <- normalizeData(unionData, unionStat)
+      }
   
   if (complete) {
     return(list(first = completeData, second = clinicalData))
@@ -266,17 +269,23 @@ brca_full <- loadData(cancer = 'BRCA', clinicalDataBRCA, complete = TRUE)
 kirc_full <- loadData(cancer = 'KIRC', clinicalDataKIRC, complete = TRUE)
 lihc_full <- loadData(cancer = 'LIHC', clinicalDataLIHC, complete = TRUE)
 luad_full <- loadData(cancer = 'LUAD', clinicalDataLUAD, complete = TRUE)
+lusc_full <- loadData(cancer = 'LUSC', clinicalDataLUSC, complete = TRUE)
+
 
 #### 
 kirc_data_full <- kirc_full[[1]]
 brca_data_full <- brca_full[[1]]
 lihc_data_full <- lihc_full[[1]]
 luad_data_full <- luad_full[[1]]
+lusc_data_full <- lusc_full[[1]]
+
 
 kirc_clin <- kirc_full[[2]]
 brca_clin <- brca_full[[2]]
 lihc_clin <- lihc_full[[2]]
 luad_clin <- luad_full[[2]]
+lusc_clin <- lusc_full[[2]]
+
 
 
 
@@ -301,6 +310,8 @@ kirc_data_full <- transform(kirc_data_full)
 brca_data_full <- transform(brca_data_full)
 lihc_data_full <- transform(lihc_data_full)
 luad_data_full <- transform(luad_data_full)
+lusc_data_full <- transform(lusc_data_full)
+
 
 
 # Split in data types
@@ -319,6 +330,10 @@ lihc_mrna_full <- lihc_data_full[[3]]
 luad_methyl_full <- luad_data_full[[1]]
 luad_mirna_full <- luad_data_full[[2]]
 luad_mrna_full <- luad_data_full[[3]]
+
+lusc_methyl_full <- lusc_data_full[[1]]
+lusc_mirna_full <- lusc_data_full[[2]]
+lusc_mrna_full <- lusc_data_full[[3]]
 
 #Merge data
 dataMerge <- function(data, clinical){
@@ -342,6 +357,8 @@ clinicalDataBRCA <- removeNAHalf(clinicalDataBRCA)
 clinicalDataKIRC <- removeNAHalf(clinicalDataKIRC)
 clinicalDataLIHC <- removeNAHalf(clinicalDataLIHC)
 clinicalDataLUAD <- removeNAHalf(clinicalDataLUAD)
+clinicalDataLUSC <- removeNAHalf(clinicalDataLUSC)
+
 
 numeric_brca <- c(10,28,32,59)
 numeric_kirc <- c(10,25)
@@ -359,6 +376,9 @@ for (i in numeric_lihc) {
 }
 for (i in numeric_luad) {
   clinicalDataLUAD[, i] <- as.numeric(clinicalDataLUAD[, i])
+}
+for (i in numeric_lusc) {
+  clinicalDataLUSC[, i] <- as.numeric(clinicalDataLUSC[, i])
 }
 
 
@@ -477,6 +497,14 @@ pdf('/home/benbrew/Desktop/batches_luad.pdf')
 pcaAll(luad_methyl_full, clinicalDataLUAD, 'luad_methyl')
 pcaAll(luad_mirna_full, clinicalDataLUAD, 'luad_mirna')
 pcaAll(luad_mrna_full, clinicalDataLUAD, 'luad_mrna')
+
+dev.off()
+
+pdf('/home/benbrew/Desktop/batches_lusc_norm.pdf')
+
+pcaAll(lusc_methyl_full, clinicalDataLUSC, 'lusc_methyl')
+pcaAll(lusc_mirna_full, clinicalDataLUSC, 'lusc_mirna')
+pcaAll(lusc_mrna_full, clinicalDataLUSC, 'lusc_mrna')
 
 dev.off()
 
