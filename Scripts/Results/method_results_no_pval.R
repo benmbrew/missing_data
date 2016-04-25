@@ -377,7 +377,7 @@ groupbyCancer(cancer = 5, scoresLUSCNormalDup, acc = TRUE, title = 'Intersection
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, nmi = TRUE, title = 'Intersection LUSC')
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, ci = TRUE, title = 'Intersection LUSC')
 
-groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, pval = TRUE, title = 'Union luad Dup')
+groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, pval = TRUE, title = 'Union LUSC')
 
 ###############################################################################################################
 

@@ -15,6 +15,10 @@ source(paste0(results_folder, '/Lib/helpers.R'))
 
 # Load data
 scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
+scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousandDup1000.csv'))
+scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousandDup3000.csv'))
+
+
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
 scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigInt.csv'))
 scoresNormalOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
