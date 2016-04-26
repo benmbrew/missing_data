@@ -20,34 +20,29 @@ scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousandDup3000.csv')
 
 
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
-scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigInt.csv'))
+# scoresNormalOrigInt <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigInt.csv'))
 scoresNormalOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
-scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
+# scoresNormalOrigClust <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigClust.csv'))
 scoresNormalOrigDup <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup.csv'))
 scoresNormalOrigDup1000 <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup1000.csv'))
 scoresNormalOrigDup3000 <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup3000.csv'))
 
-scoresNormalOrigNA <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandNA.csv'))
+# scoresNormalOrigNA <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandNA.csv'))
 scoresLUSCOrigDup <- read.csv(paste0(results_folder, '/scoresLUSCOrigDup.csv'))
 scoresLUSCNormalDup <- read.csv(paste0(results_folder, '/scoresLUSCNormalDup.csv'))
-scoresNormalOrigDupSeed <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandSeed.csv'))
+# scoresNormalOrigDupSeed <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandSeed.csv'))
 
 
 
 scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
+scoresCombatDup <- read.csv(paste0(results_folder, '/scoresCombatDup.csv'))
 scoresCombatOrig <- read.csv(paste0(results_folder, '/scoresCombatOrig.csv'))
-scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv'))
-scoresCombatOrigDupSeed <- read.csv(paste0(results_folder, '/scoresCombatOrigDupSeed.csv'))
+# scoresCombatOrigDupSeed <- read.csv(paste0(results_folder, '/scoresCombatOrigDupSeed.csv'))
 
 
 
-scoresGender <- read.csv(paste0(results_folder, '/scoresGender.csv'))
-scoresGenderOrig <- read.csv(paste0(results_folder, '/scoresGenderOrig.csv'))
-
-# similarity with 300 features
-scoresUnion3000 <- read.csv(paste0(results_folder, '/scoresunion300.csv'))
-scoresNormal3000 <- read.csv(paste0(results_folder, '/scoresCom300.csv'))
-
+# scoresGender <- read.csv(paste0(results_folder, '/scoresGender.csv'))
+# scoresGenderOrig <- read.csv(paste0(results_folder, '/scoresGenderOrig.csv'))
 
 ###################################################################################################
 # Get method types
@@ -64,8 +59,8 @@ scoresNormalOrigIntDup$method <- interaction(scoresNormalOrigIntDup$cluster,
                                           scoresNormalOrigIntDup$impute, drop = TRUE)
 
 
-scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
-                                       scoresNormalOrigClust$impute, drop = TRUE)
+# scoresNormalOrigClust$method <- interaction(scoresNormalOrigClust$cluster,
+#                                        scoresNormalOrigClust$impute, drop = TRUE)
 
 scoresNormalOrigDup$method <- interaction(scoresNormalOrigDup$cluster,
                                             scoresNormalOrigDup$impute, drop = TRUE)
@@ -77,8 +72,8 @@ scoresNormalOrigDup3000$method <- interaction(scoresNormalOrigDup3000$cluster,
                                           scoresNormalOrigDup3000$impute, drop = TRUE)
 
 
-scoresNormalOrigNA$method <- interaction(scoresNormalOrigNA$cluster,
-                                          scoresNormalOrigNA$impute, drop = TRUE)
+# scoresNormalOrigNA$method <- interaction(scoresNormalOrigNA$cluster,
+#                                           scoresNormalOrigNA$impute, drop = TRUE)
 
 
 scoresLUSCOrigDup$method <- interaction(scoresLUSCOrigDup$cluster,
@@ -88,62 +83,65 @@ scoresLUSCNormalDup$method <- interaction(scoresLUSCNormalDup$cluster,
                                         scoresLUSCNormalDup$impute, drop = TRUE)
 
 
-scoresNormalOrigDupSeed$method <- interaction(scoresNormalOrigDupSeed$cluster,
-                                       scoresNormalOrigDupSeed$impute, drop = TRUE)
+# scoresNormalOrigDupSeed$method <- interaction(scoresNormalOrigDupSeed$cluster,
+#                                        scoresNormalOrigDupSeed$impute, drop = TRUE)
 
 scoresCombat$method <- interaction(scoresCombat$cluster,
                             scoresCombat$impute, drop = TRUE)
 
-scoresCombatOrig$method <- interaction(scoresCombatOrig$cluster,
-                                scoresCombatOrig$impute, drop = TRUE)
+scoresCombatDup$method <- interaction(scoresCombatDup$cluster,
+                                   scoresCombatDup$impute, drop = TRUE)
+
+# scoresCombatOrig$method <- interaction(scoresCombatOrig$cluster,
+#                                 scoresCombatOrig$impute, drop = TRUE)
 
 scoresCombatOrigDup$method <- interaction(scoresCombatOrigDup$cluster,
                                    scoresCombatOrigDup$impute, drop = TRUE)
 
-scoresCombatOrigDupSeed$method <- interaction(scoresCombatOrigDupSeed$cluster,
-                                       scoresCombatOrigDupSeed$impute, drop = TRUE)
-
-scoresGender$method <- interaction(scoresGender$cluster,
-                                   scoresGender$impute, drop = TRUE)
-
-scoresGenderOrig$method <- interaction(scoresGenderOrig$cluster,
-                                       scoresGenderOrig$impute, drop = TRUE)
-
-# separate into male and female for complete data
-scoresGenderMale <- scoresGender[scoresGender$gender == 1,]
-scoresGenderFemale <- scoresGender[scoresGender$gender == 2,]
-
-# separate into male and female
-scoresGenderOrigMale <- scoresGenderOrig[scoresGenderOrig$gender == 1,]
-scoresGenderOrigFemale <- scoresGenderOrig[scoresGenderOrig$gender == 2,]
-
-scoresNormal3000$method <- interaction(scoresNormal3000$cluster,
-                                      scoresNormal3000$impute, drop = TRUE)
-
-scoresUnion3000$method <- interaction(scoresUnion3000$cluster,
-                                       scoresUnion3000$impute, drop = TRUE)
-
+# scoresCombatOrigDupSeed$method <- interaction(scoresCombatOrigDupSeed$cluster,
+#                                        scoresCombatOrigDupSeed$impute, drop = TRUE)
+# 
+# scoresGender$method <- interaction(scoresGender$cluster,
+#                                    scoresGender$impute, drop = TRUE)
+# 
+# scoresGenderOrig$method <- interaction(scoresGenderOrig$cluster,
+#                                        scoresGenderOrig$impute, drop = TRUE)
+# 
+# # separate into male and female for complete data
+# scoresGenderMale <- scoresGender[scoresGender$gender == 1,]
+# scoresGenderFemale <- scoresGender[scoresGender$gender == 2,]
+# 
+# # separate into male and female
+# scoresGenderOrigMale <- scoresGenderOrig[scoresGenderOrig$gender == 1,]
+# scoresGenderOrigFemale <- scoresGenderOrig[scoresGenderOrig$gender == 2,]
+# 
+# scoresNormal3000$method <- interaction(scoresNormal3000$cluster,
+#                                       scoresNormal3000$impute, drop = TRUE)
+# 
+# scoresUnion3000$method <- interaction(scoresUnion3000$cluster,
+#                                        scoresUnion3000$impute, drop = TRUE)
+# 
 
 ###################################################################################################
 # Drop acc and nmi from original data, as it's not needed for a evaluation
 scoresNormalOrig$acc <- NULL
 scoresNormalOrig$nmi <- NULL
-scoresNormalOrigClust$acc <- NULL
-scoresNormalOrigClust$nmi <- NULL
-scoresCombatOrig$acc <- NULL
-scoresCombatOrig$nmi <- NULL
-scoresGenderOrig$acc <- NULL
-scoresGenderOrig$nmi <- NULL
+# scoresNormalOrigClust$acc <- NULL
+# scoresNormalOrigClust$nmi <- NULL
+# scoresCombatOrig$acc <- NULL
+# scoresCombatOrig$nmi <- NULL
+# scoresGenderOrig$acc <- NULL
+# scoresGenderOrig$nmi <- NULL
 scoresNormalOrigDup$acc <- NULL
 scoresNormalOrigDup1000$nmi <- NULL
 scoresNormalOrigDup1000$acc <- NULL
 scoresNormalOrigDup3000$nmi <- NULL
 scoresNormalOrigDup3000$acc <- NULL
 scoresNormalOrigDup$nmi <- NULL
-scoresNormalOrigNA$acc <- NULL
-scoresNormalOrigNA$nmi <- NULL
-scoresUnion3000$acc <- NULL
-scoresUnion3000$nmi <- NULL
+# scoresNormalOrigNA$acc <- NULL
+# scoresNormalOrigNA$nmi <- NULL
+# scoresUnion3000$acc <- NULL
+# scoresUnion3000$nmi <- NULL
 
 ####################################################################################################
 # Group by method and get mean for each evaluation method (acc, nmi, pval, ci)
@@ -238,50 +236,48 @@ groupbyMethod(scoresNormal, normal = TRUE, title = 'Intersection All Cancers')
 groupbyMethod(scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers')
 
 groupbyMethod(scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup')
-groupbyMethod(scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers Dup')
-groupbyMethod(scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup')
-groupbyMethod(scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup')
-groupbyMethod(scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup')
-groupbyMethod(scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup')
+# groupbyMethod(scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers Dup')
+# groupbyMethod(scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup')
+# groupbyMethod(scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup')
+# groupbyMethod(scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup')
+# groupbyMethod(scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup')
 
 groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup 1000')
 groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers Dup 1000')
-groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup 1000')
-groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup 1000')
-groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup 1000')
-groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup 1000')
+# groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup 1000')
+# groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup 1000')
+# groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup 1000')
+# groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup 1000')
 
 groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup 3000')
-groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers Dup 3000')
-groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup 3000')
-groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup 3000')
-groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup 3000')
-groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup 3000')
+# groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers Dup 3000')
+# groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers Dup 3000')
+# groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union All Cancers Dup 3000')
+# groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers Dup 3000')
+# groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dup 3000')
 
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers DupSeed')
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers DupSeed')
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers DupSeed')
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con CiUnion All Cancers DupSeed')
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers DupSeed')
-groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dupseed')
-
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers NA')
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers NA')
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers NA')
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con CiUnion All Cancers NA')
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers NA')
-groupbyMethod(scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers NA')
-
-groupbyMethod(scoresNormalOrigClust, orig = TRUE, pval = TRUE, title = 'Original Data')
-
-groupbyMethod(scoresGenderMale,normal = TRUE, title = 'Complete Data Male')
-groupbyMethod(scoresGenderOrigMale, orig = TRUE, normal = TRUE, title = 'Original Data Male')
-
-groupbyMethod(scoresGenderFemale, normal = TRUE, title = 'Complete Data with Female')
-groupbyMethod(scoresGenderOrigFemale, orig = TRUE, pval = TRUE, title = 'Original Data with Female')
-
-groupbyMethod(scoresNormal3000, normal = TRUE, title = 'Complete Data with 3000')
-groupbyMethod(scoresUnion3000, orig = TRUE, pval = TRUE, title = 'Original Data with 3000')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers DupSeed')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers DupSeed')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers DupSeed')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con CiUnion All Cancers DupSeed')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers DupSeed')
+# groupbyMethod(scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers Dupseed')
+# 
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers NA')
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union All Cancers NA')
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion All Cancers NA')
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con CiUnion All Cancers NA')
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'Bias Union All Cancers NA')
+# groupbyMethod(scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'Coef Union All Cancers NA')
+# 
+# groupbyMethod(scoresNormalOrigClust, orig = TRUE, pval = TRUE, title = 'Original Data')
+# 
+# groupbyMethod(scoresGenderMale,normal = TRUE, title = 'Complete Data Male')
+# groupbyMethod(scoresGenderOrigMale, orig = TRUE, normal = TRUE, title = 'Original Data Male')
+# 
+# groupbyMethod(scoresGenderFemale, normal = TRUE, title = 'Complete Data with Female')
+# groupbyMethod(scoresGenderOrigFemale, orig = TRUE, pval = TRUE, title = 'Original Data with Female')
+# 
 
 
 
@@ -535,135 +531,135 @@ groupbyCancer(cancer = 1, scoresNormal, normal = TRUE, title = 'Intersection BRC
 groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA')
 
 groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup')
-groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup')
-groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup')
-groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup')
-groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup')
-groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup')
 
 groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup 1000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup 1000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup 1000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup 1000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup 1000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup 1000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup 1000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup 1000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup 1000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup 1000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup 1000')
 
 groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup 3000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup 3000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup 3000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup 3000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup 3000')
-groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup 3000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA Dup 3000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Dup 3000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA Dup 3000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union BRCA Dup 3000')
+# groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union BRCA Dup 3000')
 
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA DupSeed')
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA DupSeed')
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA DupSeed')
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA DupSeed')
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union BRCA DupSeed')
-groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union BRCA DupSeed')
-
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA NA')
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA NA')
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Na')
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA NA')
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union BRCA NA')
-groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union BRCA NA')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA DupSeed')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA DupSeed')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA DupSeed')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA DupSeed')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union BRCA DupSeed')
+# groupbyCancer(cancer = 1, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union BRCA DupSeed')
+# 
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA NA')
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union BRCA NA')
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion BRCA Na')
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union BRCA NA')
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union BRCA NA')
+# groupbyCancer(cancer = 1, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union BRCA NA')
 
 ## KIRC
+
+groupbyCancer(cancer = 2, scoresNormal, normal = TRUE, title = 'Intersection KIRC')
+
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union kirc')
 
 groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc Dup')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Dup')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc Dup')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union kirc Dup')
-groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union kirc Dup')
 
 groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 1000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc Dup 1000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Dup 1000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc Dup 1000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union kirc Dup 1000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union kirc Dup 1000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc Dup 1000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Dup 1000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc Dup 1000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union kirc Dup 1000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union kirc Dup 1000')
 
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 3000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc Dup 3000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Dup 3000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc Dup 3000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union kirc Dup 3000')
-groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union kirc Dup 3000')
+# groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union kirc Dup 3000')
 
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union kirc DupSeed')
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc DupSeed')
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc DupSeed')
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc DupSeed')
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union kirc DupSeed')
-groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union kirc DupSeed')
-
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union kirc NA')
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc NA')
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Na')
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc NA')
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union kirc NA')
-groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union kirc NA')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union kirc DupSeed')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc DupSeed')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc DupSeed')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc DupSeed')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union kirc DupSeed')
+# groupbyCancer(cancer = 2, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union kirc DupSeed')
+# 
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union kirc NA')
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union kirc NA')
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion kirc Na')
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union kirc NA')
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union kirc NA')
+# groupbyCancer(cancer = 2, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union kirc NA')
 
 
 groupbyMethod(scoresCombat, normal = TRUE, title = 'Combat intersection')
+groupbyMethod(scoresCombatDup, normal = TRUE, title = 'Combat intersection')
 
-groupbyMethod(scoresCombatOrig, orig = TRUE, pval = TRUE, title = 'Combat union')
+
+# groupbyMethod(scoresCombatOrig, orig = TRUE, pval = TRUE, title = 'Combat union')
 
 groupbyMethod(scoresCombatOrigDup, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed')
-groupbyMethod(scoresCombatOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion combat DupSeed')
-groupbyMethod(scoresCombatOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion combat DupSeed')
+# groupbyMethod(scoresCombatOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union combat DupSeed')
 
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion combat DupSeed')
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union combat DupSeed')
-groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union combat DupSeed')
+# groupbyMethod(scoresCombatOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union combat DupSeed')
 
 ## lihc
 groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
 
 groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup')
 
 groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 1000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup 1000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup 1000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup 1000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup 1000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup 1000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup 1000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup 1000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup 1000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup 1000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup 1000')
 
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 3000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup 3000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup 3000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup 3000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup 3000')
-groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, bias = TRUE, title = 'bias Union lihc Dup 3000')
+# groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, coef = TRUE, title = 'coef Union lihc Dup 3000')
 
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union lihc DupSeed')
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc DupSeed')
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc DupSeed')
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc DupSeed')
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union lihc DupSeed')
-groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union lihc DupSeed')
-
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union lihc NA')
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc NA')
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Na')
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc NA')
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union lihc NA')
-groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union lihc NA')
-
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, pval = TRUE, title = 'Pval Union lihc DupSeed')
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc DupSeed')
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc DupSeed')
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc DupSeed')
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, bias = TRUE, title = 'bias Union lihc DupSeed')
+# groupbyCancer(cancer = 3, scoresNormalOrigDupSeed, orig = TRUE, coef = TRUE, title = 'coef Union lihc DupSeed')
+# 
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, pval = TRUE, title = 'Pval Union lihc NA')
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, pvalcox = TRUE, title = 'Pvalcox Union lihc NA')
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, con_index_p = TRUE, title = 'Con PUnion lihc Na')
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, con_index_ci = TRUE, title = 'Con Ci Union lihc NA')
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, bias = TRUE, title = 'bias Union lihc NA')
+# groupbyCancer(cancer = 3, scoresNormalOrigNA, orig = TRUE, coef = TRUE, title = 'coef Union lihc NA')
+# 
 
 ## luad
 groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union luad')
