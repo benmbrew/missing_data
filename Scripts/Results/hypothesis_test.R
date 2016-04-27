@@ -33,6 +33,8 @@ scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatDup <- read.csv(paste0(results_folder, '/scoresCombatDup.csv'))
 scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv'))
 
+scoresOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
+
 ###################################################################################################
 # Get method types
 scoresNormal$method <- interaction(scoresNormal$cluster,
@@ -72,6 +74,11 @@ scoresNormalOrigDup3000$method <- interaction(scoresNormalOrigDup3000$cluster,
 scoresLUSCOrigDup$method <- interaction(scoresLUSCOrigDup$cluster,
                                         scoresLUSCOrigDup$impute, drop = TRUE)
 
+
+scoresOrigIntDup$method <- interaction(scoresOrigIntDup$cluster,
+                                       scoresOrigIntDup$impute, drop = TRUE)
+
+
 ####################################################################################################
 # remove NAs 
 scoresNormal <- scoresNormal[complete.cases(scoresNormal),]
@@ -90,23 +97,112 @@ scoresCombat <- scoresCombat[complete.cases(scoresCombat),]
 scoresCombatDup <- scoresCombatDup[complete.cases(scoresCombatDup),]
 scoresCombatOrigDup <- scoresCombatOrigDup[complete.cases(scoresCombatOrigDup),]
 
+scoresOrigIntDup <- scoresOrigIntDup[complete.cases(scoresOrigIntDup),]
+
+
 ####################################################################################################
 # For each cancer, compare all scores together 
 
-cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
+# First subset all data by important variables so you can combing combat and LUSC to scoresNormal and scoresNormalOrigDup
+keep <- c("X", "cancer", "impute", "cluster", "acc", "nmi", "pval", "ci", "method")
+scoresNormal <- scoresNormal[, keep]
 
-isGreater <- function(data, cancer) {
+scoresLUSCNormalDup <- scoresLUSCNormalDup[, keep]
+
+scoresCombat$cancer <- 6
+scoresCombatDup$cancer <- 6
+scoresCombat <- scoresCombat[, keep]
+scoresCombatDup <- scoresCombatDup[, keep]
+
+# Now add in combat and LUSC 
+scoresAll <- rbind(scoresNormal, scoresLUSCNormalDup, scoresCombat)
+
+################## For Acc, nmi, pval, and ci
+isGreaterTotal <- function(data) {
   
-  cancer <- data[which(data$cancer == cancer),]
+  cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC", "KIRC_combat")
+  methodTypes <- levels(data$method)
+  data$method <- as.numeric(data$method)
   
-  temp <- gather()
   
-  temp <- cancer %>%
-    group_by(method) %>%
-    summarise(meanScore = mean(acc + nmi + pval + ci, na.rm = T))
+  xGreaterY <- function(x, y) {
+    t.test(x, y, alternative="greater", paired=FALSE, na.action = na.omit, var.equal = FALSE)$p.value < 0.05
+  }
   
+  testScores <- matrix(, 0, 3)
+  
+  for (canc in 1:length(cancerTypes)) {
+    
+    for (met1 in 1:length(methodTypes)) {
+      score1 <- subset(data, cancer==canc&method==met1)
+      scoreVector <- rep.int(0, length(methodTypes))
+      totalScores <- score1$acc + score1$nmi + score1$pval + score1$ci
+      print(met1)
+      
+      for (met2 in (1:length(methodTypes))[-met1]) {
+        score2 <- subset(data, cancer==canc&method==met2)
+        totalScores2 <- score2$acc + score2$nmi + score2$pval + score2$ci
+        scoreVector[met2] <- xGreaterY(totalScores, totalScores2)
+        
+      }
+      testScores <- rbind(testScores,
+                          c(canc, met1, sum(scoreVector)))
+    }
+  }
+  
+  colnames(testScores) <- c("cancer", "method", "score")
+  testScores <- as.data.frame(testScores)
+  testScores$cancer <- cancerTypes[testScores$cancer]
+  testScores$method <- methodTypes[testScores$method]
+  
+  return(testScores)
   
 }
-for (i in 1:length(cancerTypes)) {
+
+testScoresAll <- isGreaterTotal(scoresAll)
+
+########################### for acc, nmi, ci
+
+isGreaterTotal <- function(data) {
+  
+  cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC", "KIRC_combat")
+  methodTypes <- levels(data$method)
+  data$method <- as.numeric(data$method)
+  
+  
+  xGreaterY <- function(x, y) {
+    t.test(x, y, alternative="greater", paired=FALSE, na.action = na.omit, var.equal = FALSE)$p.value < 0.05
+  }
+  
+  testScores <- matrix(, 0, 3)
+  
+  for (canc in 1:length(cancerTypes)) {
+    
+    for (met1 in 1:length(methodTypes)) {
+      score1 <- subset(data, cancer==canc&method==met1)
+      scoreVector <- rep.int(0, length(methodTypes))
+      totalScores <- score1$acc + score1$nmi  + score1$ci
+      print(met1)
+      
+      for (met2 in (1:length(methodTypes))[-met1]) {
+        score2 <- subset(data, cancer==canc&method==met2)
+        totalScores2 <- score2$acc + score2$nmi + score2$ci
+        scoreVector[met2] <- xGreaterY(totalScores, totalScores2)
+        
+      }
+      testScores <- rbind(testScores,
+                          c(canc, met1, sum(scoreVector)))
+    }
+  }
+  
+  colnames(testScores) <- c("cancer", "method", "score")
+  testScores <- as.data.frame(testScores)
+  testScores$cancer <- cancerTypes[testScores$cancer]
+  testScores$method <- methodTypes[testScores$method]
+  
+  return(testScores)
   
 }
+
+testScoresAllNoP <- isGreaterTotal(scoresAll)
+

@@ -32,6 +32,10 @@ scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatDup <- read.csv(paste0(results_folder, '/scoresCombatDup.csv'))
 scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv'))
 
+scoresOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
+
+
+
 ###################################################################################################
 # Get method types
 scoresNormal$method <- interaction(scoresNormal$cluster,
@@ -71,6 +75,9 @@ scoresNormalOrigDup3000$method <- interaction(scoresNormalOrigDup3000$cluster,
 scoresLUSCOrigDup$method <- interaction(scoresLUSCOrigDup$cluster,
                                         scoresLUSCOrigDup$impute, drop = TRUE)
 
+scoresOrigIntDup$method <- interaction(scoresOrigIntDup$cluster,
+                                        scoresOrigIntDup$impute, drop = TRUE)
+
 ####################################################################################################
 # remove NAs 
 scoresNormal <- scoresNormal[complete.cases(scoresNormal),]
@@ -89,6 +96,9 @@ scoresCombat <- scoresCombat[complete.cases(scoresCombat),]
 scoresCombatDup <- scoresCombatDup[complete.cases(scoresCombatDup),]
 scoresCombatOrigDup <- scoresCombatOrigDup[complete.cases(scoresCombatOrigDup),]
 
+scoresOrigIntDup <- scoresOrigIntDup[complete.cases(scoresOrigIntDup),]
+
+
 ####################################################################################################
 # Group by method and get mean for each evaluation method (acc, nmi, pval, ci)
 
@@ -100,9 +110,11 @@ groupbyMethod <- function(data, orig = FALSE,
                           con_index_ci = FALSE, 
                           bias = FALSE, 
                           coef = FALSE,
+                          int = FALSE,
                           title) {
   
   if ((orig) && (pval)) {
+    
     temp <- data %>%
       group_by(method) %>%
       summarise(meanPval = mean(pval, na.rm = T),
@@ -111,56 +123,90 @@ groupbyMethod <- function(data, orig = FALSE,
     temp_melt <- melt(temp, id.vars = c('method'))
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
-  } else if (orig & pvalcox) {
-    temp <- data %>%
+  
+    } else if (orig & int) {
+    
+      temp <- data %>%
+      group_by(method) %>%
+      summarise(meanAcc = mean(intAcc, na.rm = T),
+                meanNmi = mean(intNmi, na.rm = T))
+    
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+  
+    } else if (orig & pvalcox) {
+    
+      temp <- data %>%
       group_by(method) %>%
       summarise(meanPval = mean(pvalcox, na.rm = T),
                 meanCi = mean(ci, na.rm = T))
     
-    temp_melt <- melt(temp, id.vars = c('method'))
-    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
-  } else if (orig & con_index_p) {
-    temp <- data %>%
+  
+    } else if (orig & con_index_p) {
+   
+      temp <- data %>%
       group_by(method) %>%
       summarise(meanPval = mean(con_index_p, na.rm = T),
                 meanCi = mean(ci, na.rm = T))
     
-    temp_melt <- melt(temp, id.vars = c('method'))
-    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
     
-  } else if (orig & con_index_ci) {
-    temp <- data %>%
+  
+    } else if (orig & con_index_ci) {
+    
+      temp <- data %>%
       group_by(method) %>%
       summarise(meanPval = mean(pval, na.rm = T),
                 meanCi = mean(con_index_ci, na.rm = T))
     
-    temp_melt <- melt(temp, id.vars = c('method'))
-    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
     
-  } else if (orig & bias) {
-    temp <- data %>%
+  
+    } else if (orig & bias) {
+    
+      temp <- data %>%
       group_by(method) %>%
       summarise(meanPval = mean(pval, na.rm = T),
                 meanCi = mean(bias_corrected_c_index, na.rm = T))
     
-    temp_melt <- melt(temp, id.vars = c('method'))
-    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
     
-  } else if (orig & coef) {
-    temp <- data %>%
+  
+    } else if (orig & coef) {
+    
+      temp <- data %>%
       group_by(method) %>%
       summarise(meanCoef = mean(coefcox, na.rm = T),
                 meanStd = mean(se.std, na.rm = T))
     
-    temp_melt <- melt(temp, id.vars = c('method'))
-    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+    
+      temp_melt <- melt(temp, id.vars = c('method'))
+    
+      ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
     
-  } else if (normal) {
+  
+    } else if (normal) {
     
     temp <- data %>%
       group_by(method) %>%
@@ -187,6 +233,7 @@ groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval U
 groupbyMethod(scoresNormal3000, normal = TRUE, title = 'Intersection All Cancers 3000')
 groupbyMethod(scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup 3000')
 
+groupbyMethod(scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'Union Intersection of Union')
 
 ##################################################################################################
 # Group by cancer and method and mean of evaluation. 
@@ -198,12 +245,16 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
                           con_index_ci = FALSE, 
                           bias = FALSE, 
                           coef = FALSE,
+                          int = FALSE,
+                          nmi = FALSE, 
+                          acc = FALSE,
                           title) {
   
   temp_data <- data[data$cancer == cancer,]
   
   if ((orig) && (pval)) {
-    temp <- data %>%
+    
+    temp <- temp_data %>%
       group_by(method) %>%
       summarise(meanPval = mean(pval, na.rm = T),
                 meanCi = mean(ci, na.rm = T))
@@ -211,6 +262,37 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
     temp_melt <- melt(temp, id.vars = c('method'))
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+    } else if (orig & int) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanAcc = mean(intAcc, na.rm = T),
+                meanNmi = mean(intNmi, na.rm = T))
+    
+    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    
+    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+    } else if (orig & acc) {
+      
+      temp <- temp_data %>%
+        group_by(method) %>%
+        summarise(meanAcc = mean(intAcc, na.rm = T))
+            
+      ggplot(data = temp, aes(reorder(method, -meanAcc), meanAcc)) + geom_bar(stat = 'identity') +
+        xlab('Method') + ylab('Mean ACC') + ggtitle(title) + theme_538_bar
+      
+    } else if (orig & nmi) {
+      
+      temp <- temp_data %>%
+        group_by(method) %>%
+        summarise(meanNmi = mean(intNmi, na.rm = T))
+      
+      ggplot(data = temp, aes(reorder(method, -meanNmi), meanNmi)) + geom_bar(stat = 'identity') +
+        xlab('Method') + ylab('Mean NMI') + ggtitle(title) + theme_538_bar
     
   } else if (orig & pvalcox) {
     
@@ -337,9 +419,11 @@ groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, tit
 groupbyCancer(cancer = 1, scoresNormal3000, normal = TRUE, title = 'Intersection BRCA')
 groupbyCancer(cancer = 1, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup 3000')
 
+groupbyCancer(cancer = 1, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'BRCA Intersection of Union')
+groupbyCancer(cancer = 1, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'BRCA Intersection of Union')
+groupbyCancer(cancer = 1, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'BRCA Intersection of Union')
 
 ## KIRC
-
 groupbyCancer(cancer = 2, scoresNormal, normal = TRUE, title = 'Intersection KIRC')
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union kirc')
 groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
@@ -350,13 +434,15 @@ groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, tit
 groupbyCancer(cancer = 2, scoresNormal3000, normal = TRUE, title = 'Intersection KIRC')
 groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 3000')
 
-
 groupbyMethod(scoresCombat, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatDup, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatOrigDup, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed')
 
-## lihc
+groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'KIRC (Combat) Intersection of Union')
+groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'KIRC (Combat) Intersection of Union')
+groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'KIRC (Combat) Intersection of Union')
 
+## lihc
 groupbyCancer(cancer = 3, scoresNormal, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
@@ -368,6 +454,9 @@ groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, tit
 groupbyCancer(cancer = 3, scoresNormal3000, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 3000')
 
+groupbyCancer(cancer = 3, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'LIHC Intersection of Union')
+groupbyCancer(cancer = 3, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'LIHC Intersection of Union')
+groupbyCancer(cancer = 3, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LIHC Intersection of Union')
 
 ## luad
 groupbyCancer(cancer = 4, scoresNormal, normal = TRUE, title = 'Intersection luad')
@@ -381,6 +470,10 @@ groupbyCancer(cancer = 4, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, tit
 groupbyCancer(cancer = 4, scoresNormal3000, normal = TRUE, title = 'Intersection luad')
 groupbyCancer(cancer = 4, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union luad Dup 3000')
 
+groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'LUAD Intersection of Union')
+groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'LUAD Intersection of Union')
+groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LUAD Intersection of Union')
+
 # LUSC
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, normal = TRUE, pval = TRUE, title = 'Intersection LUSC')
 
@@ -392,6 +485,9 @@ groupbyCancer(cancer = 5, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, tit
 groupbyCancer(cancer = 5, scoresNormal3000, normal = TRUE, title = 'Intersection lusc')
 groupbyCancer(cancer = 5, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union lusc Dup 3000')
 
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'LUSC Intersection of Union')
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'LUSC Intersection of Union')
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LUSC Intersection of Union')
 
 ####################################################################################################################
 # graphs with error bars
