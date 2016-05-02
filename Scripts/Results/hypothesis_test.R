@@ -206,3 +206,138 @@ isGreaterTotal <- function(data) {
 
 testScoresAllNoP <- isGreaterTotal(scoresAll)
 
+
+########################### for acc, nmi
+
+isGreaterTotal <- function(data) {
+  
+  cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC", "KIRC_combat")
+  methodTypes <- levels(data$method)
+  data$method <- as.numeric(data$method)
+  
+  
+  xGreaterY <- function(x, y) {
+    t.test(x, y, alternative="greater", paired=FALSE, na.action = na.omit, var.equal = FALSE)$p.value < 0.05
+  }
+  
+  testScores <- matrix(, 0, 3)
+  
+  for (canc in 1:length(cancerTypes)) {
+    
+    for (met1 in 1:length(methodTypes)) {
+      score1 <- subset(data, cancer==canc&method==met1)
+      scoreVector <- rep.int(0, length(methodTypes))
+      totalScores <- score1$acc + score1$nmi
+      print(met1)
+      
+      for (met2 in (1:length(methodTypes))[-met1]) {
+        score2 <- subset(data, cancer==canc&method==met2)
+        totalScores2 <- score2$acc + score2$nmi 
+        scoreVector[met2] <- xGreaterY(totalScores, totalScores2)
+        
+      }
+      testScores <- rbind(testScores,
+                          c(canc, met1, sum(scoreVector)))
+    }
+  }
+  
+  colnames(testScores) <- c("cancer", "method", "score")
+  testScores <- as.data.frame(testScores)
+  testScores$cancer <- cancerTypes[testScores$cancer]
+  testScores$method <- methodTypes[testScores$method]
+  
+  return(testScores)
+  
+}
+
+testScoresAllacc_nmi <- isGreaterTotal(scoresAll)
+
+########################### for pval, ci
+
+isGreaterTotal <- function(data) {
+  
+  cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC", "KIRC_combat")
+  methodTypes <- levels(data$method)
+  data$method <- as.numeric(data$method)
+  
+  
+  xGreaterY <- function(x, y) {
+    t.test(x, y, alternative="greater", paired=FALSE, na.action = na.omit, var.equal = FALSE)$p.value < 0.05
+  }
+  
+  testScores <- matrix(, 0, 3)
+  
+  for (canc in 1:length(cancerTypes)) {
+    
+    for (met1 in 1:length(methodTypes)) {
+      score1 <- subset(data, cancer==canc&method==met1)
+      scoreVector <- rep.int(0, length(methodTypes))
+      totalScores <- score1$pval + score1$ci
+      print(met1)
+      
+      for (met2 in (1:length(methodTypes))[-met1]) {
+        score2 <- subset(data, cancer==canc&method==met2)
+        totalScores2 <- score2$pval + score2$ci
+        scoreVector[met2] <- xGreaterY(totalScores, totalScores2)
+        
+      }
+      testScores <- rbind(testScores,
+                          c(canc, met1, sum(scoreVector)))
+    }
+  }
+  
+  colnames(testScores) <- c("cancer", "method", "score")
+  testScores <- as.data.frame(testScores)
+  testScores$cancer <- cancerTypes[testScores$cancer]
+  testScores$method <- methodTypes[testScores$method]
+  
+  return(testScores)
+  
+}
+
+testScoresAllpval_ci <- isGreaterTotal(scoresAll)
+
+########################### for ci
+
+isGreaterTotal <- function(data) {
+  
+  cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC", "KIRC_combat")
+  methodTypes <- levels(data$method)
+  data$method <- as.numeric(data$method)
+  
+  
+  xGreaterY <- function(x, y) {
+    t.test(x, y, alternative="greater", paired=FALSE, na.action = na.omit, var.equal = FALSE)$p.value < 0.05
+  }
+  
+  testScores <- matrix(, 0, 3)
+  
+  for (canc in 1:length(cancerTypes)) {
+    
+    for (met1 in 1:length(methodTypes)) {
+      score1 <- subset(data, cancer==canc&method==met1)
+      scoreVector <- rep.int(0, length(methodTypes))
+      totalScores <- score1$ci
+      print(met1)
+      
+      for (met2 in (1:length(methodTypes))[-met1]) {
+        score2 <- subset(data, cancer==canc&method==met2)
+        totalScores2 <- score2$ci
+        scoreVector[met2] <- xGreaterY(totalScores, totalScores2)
+        
+      }
+      testScores <- rbind(testScores,
+                          c(canc, met1, sum(scoreVector)))
+    }
+  }
+  
+  colnames(testScores) <- c("cancer", "method", "score")
+  testScores <- as.data.frame(testScores)
+  testScores$cancer <- cancerTypes[testScores$cancer]
+  testScores$method <- methodTypes[testScores$method]
+  
+  return(testScores)
+  
+}
+
+testScoresAllci <- isGreaterTotal(scoresAll)

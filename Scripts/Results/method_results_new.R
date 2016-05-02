@@ -34,7 +34,11 @@ scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv
 
 scoresOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
 
+scoresDataTypes <- read.csv(paste0(results_folder, '/scoresDataTypes.csv'))
+scoresOrigDataTypes <- read.csv(paste0(results_folder, '/scoresOrigDataTypes.csv'))
 
+scoresCombatDataTypes <- read.csv(paste0(results_folder, '/scoresCombatDataTypes.csv'))
+scoresOrigCombatDataTypes <- read.csv(paste0(results_folder, '/scoresOrigCombatDataTypes.csv'))
 
 ###################################################################################################
 # Get method types
@@ -78,6 +82,18 @@ scoresLUSCOrigDup$method <- interaction(scoresLUSCOrigDup$cluster,
 scoresOrigIntDup$method <- interaction(scoresOrigIntDup$cluster,
                                         scoresOrigIntDup$impute, drop = TRUE)
 
+scoresDataTypes$method <- interaction(scoresDataTypes$cluster,
+                                       scoresDataTypes$impute, drop = TRUE)
+
+scoresOrigDataTypes$method <- interaction(scoresOrigDataTypes$cluster,
+                                      scoresOrigDataTypes$impute, drop = TRUE)
+
+scoresCombatDataTypes$method <- interaction(scoresCombatDataTypes$cluster,
+                                      scoresCombatDataTypes$impute, drop = TRUE)
+
+scoresOrigCombatDataTypes$method <- interaction(scoresOrigCombatDataTypes$cluster,
+                                          scoresOrigCombatDataTypes$impute, drop = TRUE)
+
 ####################################################################################################
 # remove NAs 
 scoresNormal <- scoresNormal[complete.cases(scoresNormal),]
@@ -97,6 +113,12 @@ scoresCombatDup <- scoresCombatDup[complete.cases(scoresCombatDup),]
 scoresCombatOrigDup <- scoresCombatOrigDup[complete.cases(scoresCombatOrigDup),]
 
 scoresOrigIntDup <- scoresOrigIntDup[complete.cases(scoresOrigIntDup),]
+
+scoresDataTypes <- scoresDataTypes[complete.cases(scoresDataTypes),]
+scoresOrigDataTypes <- scoresOrigDataTypes[complete.cases(scoresOrigDataTypes),]
+
+scoresCombatDataTypes <- scoresCombatDataTypes[complete.cases(scoresCombatDataTypes),]
+scoresOrigCombatDataTypes <- scoresOrigCombatDataTypes[complete.cases(scoresOrigCombatDataTypes),]
 
 
 ####################################################################################################
@@ -248,6 +270,7 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
                           int = FALSE,
                           nmi = FALSE, 
                           acc = FALSE,
+                          acc_nmi = FALSE,
                           title) {
   
   temp_data <- data[data$cancer == cancer,]
@@ -405,10 +428,23 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
     
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ggtitle(title) + theme_538_bar
+  
+  } else if (acc_nmi) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T))    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    
+    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ggtitle(title) + theme_538_bar
+    
   }
 }
 
 groupbyCancer(cancer = 1, scoresNormal, normal = TRUE, title = 'Intersection BRCA')
+groupbyCancer(cancer = 1, scoresNormal, acc_nmi = TRUE, title = 'Intersection BRCA')
 groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA')
 groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup')
 
@@ -425,6 +461,8 @@ groupbyCancer(cancer = 1, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'BR
 
 ## KIRC
 groupbyCancer(cancer = 2, scoresNormal, normal = TRUE, title = 'Intersection KIRC')
+groupbyCancer(cancer = 2, scoresNormal, acc_nmi = TRUE, title = 'Intersection KIRC')
+
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union kirc')
 groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
 
@@ -444,6 +482,8 @@ groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'KI
 
 ## lihc
 groupbyCancer(cancer = 3, scoresNormal, normal = TRUE, title = 'Intersection lihc')
+groupbyCancer(cancer = 3, scoresNormal, acc_nmi = TRUE, title = 'Intersection lihc')
+
 groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
 
@@ -460,6 +500,8 @@ groupbyCancer(cancer = 3, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LI
 
 ## luad
 groupbyCancer(cancer = 4, scoresNormal, normal = TRUE, title = 'Intersection luad')
+groupbyCancer(cancer = 4, scoresNormal, acc_nmi = TRUE, title = 'Intersection luad')
+
 groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union luad')
 groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union luad Dup')
 
@@ -476,6 +518,8 @@ groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LU
 
 # LUSC
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, normal = TRUE, pval = TRUE, title = 'Intersection LUSC')
+groupbyCancer(cancer = 5, scoresLUSCNormalDup, acc_nmi = TRUE, pval = TRUE, title = 'Intersection LUSC')
+
 
 groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, pval = TRUE, title = 'Union LUSC duplicates removed')
 
@@ -927,3 +971,181 @@ cancerError(cancer = 5, scoresLUSCNormalDup, normal = TRUE, nmi = TRUE, title = 
 
 cancerError(cancer = 5, scoresLUSCOrigDup, orig = TRUE, pval = TRUE, title = 'Union luad Dup')
 cancerError(cancer = 5, scoresLUSCOrigDup, orig = TRUE, ci = TRUE, title = 'Union luad Dup')
+
+##################################################################################################
+
+# set data types
+dataTypes <- c("methyl", "mirna", "mrna")
+scoresDataTypes$data_types <- dataTypes[scoresDataTypes$data_types]
+scoresOrigDataTypes$data_types <- dataTypes[scoresOrigDataTypes$data_types]
+scoresCombatDataTypes$data_types <- dataTypes[scoresCombatDataTypes$data_types]
+scoresOrigCombatDataTypes$data_types <- dataTypes[scoresOrigCombatDataTypes$data_types]
+
+# give combat a cancer column 
+scoresCombatDataTypes$cancer <- 6
+scoresOrigCombatDataTypes$cancer <- 6
+
+# combine scoresDataTypes and combat
+scoresAllDataTypes <- rbind(scoresDataTypes, scoresCombatDataTypes)
+scoresOrigAllDataTypes <- rbind(scoresOrigDataTypes, scoresOrigCombatDataTypes)
+
+
+# Group by cancer and method and mean of evaluation. 
+groupbyCancer <- function(cancer, 
+                          data, 
+                          data_types,
+                          orig = FALSE, 
+                          normal = FALSE,
+                          nopval = FALSE, 
+                          ci = FALSE, 
+                          title) {
+  
+  temp_data <- data[data$cancer == cancer,]
+  temp_data <- temp_data[temp_data$data_types == data_types,]
+  
+  if (orig && !ci) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+  } else if (orig && ci) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanCi = mean(ci, na.rm = T))
+    
+    ggplot(data = temp, aes(reorder(method, -meanCi), meanCi)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ylab('Mean CI') + ggtitle(title) + theme_538_bar
+    
+  } else if (normal && !nopval) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanPval = mean(pval, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    
+    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ggtitle(title) + theme_538_bar
+    
+  } else if (normal && nopval) {
+    
+    temp <- temp_data %>%
+      group_by(method) %>%
+      summarise(meanAcc = mean(acc, na.rm = T),
+                meanNmi = mean(nmi, na.rm = T),
+                meanCi = mean(ci, na.rm = T))
+    
+    temp_melt <- melt(temp, id.vars = c('method'))
+    
+    ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ggtitle(title) + theme_538_bar
+    
+  }
+}
+
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "BRCA Methylation Intersection")
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "BRCA mirna Intersecton")
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "BRCA mrna Intersection")
+
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE, title = "BRCA Methylation Intersection")
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "BRCA mirna Intersecton")
+groupbyCancer(cancer = 1, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "BRCA mrna Intersection")
+
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "BRCA Methylation Union")
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "BRCA mirna Union")
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "BRCA mrna Union")
+
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "BRCA Methylation Union")
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE, title = "BRCA mirna Union")
+groupbyCancer(cancer = 1, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "BRCA mrna Union")
+
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "kirc Methylation Intersection")
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "kirc mirna Intersecton")
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "kirc mrna Intersection")
+
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE, title = "kirc Methylation Intersection")
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "kirc mirna Intersecton")
+groupbyCancer(cancer = 2, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "kirc mrna Intersection")
+
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "kirc Methylation Union")
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "kirc mirna Union")
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "kirc mrna Union")
+
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "kirc Methylation Union")
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE, title = "kirc mirna Union")
+groupbyCancer(cancer = 2, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "kirc mrna Union")
+
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "combat Methylation Intersection")
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "combat mirna Intersecton")
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "combat mrna Intersection")
+
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE, title = "combat Methylation Intersection")
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "combat mirna Intersecton")
+groupbyCancer(cancer = 6, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "combat mrna Intersection")
+
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "combat Methylation Union")
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "combat mirna Union")
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "combat mrna Union")
+
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "combat Methylation Union")
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE, title = "combat mirna Union")
+groupbyCancer(cancer = 6, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "combat mrna Union")
+
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "lihc Methylation Intersection")
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "lihc mirna Intersecton")
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "lihc mrna Intersection")
+
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE, title = "lihc Methylation Intersection")
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "lihc mirna Intersecton")
+groupbyCancer(cancer = 3, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "lihc mrna Intersection")
+
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "lihc Methylation Union")
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "lihc mirna Union")
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "lihc mrna Union")
+
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "lihc Methylation Union")
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE, title = "lihc mirna Union")
+groupbyCancer(cancer = 3, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "lihc mrna Union")
+
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "luad Methylation Intersection")
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "luad mirna Intersecton")
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "luad mrna Intersection")
+
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE,title = "luad Methylation Intersection")
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "luad mirna Intersecton")
+groupbyCancer(cancer = 4, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "luad mrna Intersection")
+
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "luad Methylation Union")
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "luad mirna Union")
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "luad mrna Union")
+
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "luad Methylation Union")
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE,  title = "luad mirna Union")
+groupbyCancer(cancer = 4, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "luad mrna Union")
+
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "methyl", normal = TRUE, title = "lusc Methylation Intersection")
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "mirna", normal = TRUE, title = "lusc mirna Intersecton")
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "mrna", normal = TRUE, title = "lusc mrna Intersection")
+
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "methyl", normal = TRUE, nopval = TRUE, title = "lusc Methylation Intersection")
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "mirna", normal = TRUE, nopval = TRUE, title = "lusc mirna Intersecton")
+groupbyCancer(cancer = 5, scoresAllDataTypes, data_types = "mrna", normal = TRUE, nopval = TRUE, title = "lusc mrna Intersection")
+
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, title = "lusc Methylation Union")
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, title = "lusc mirna Union")
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, title = "lusc mrna Union")
+
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "methyl", orig = TRUE, ci = TRUE, title = "lusc Methylation Union")
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "mirna", orig = TRUE, ci = TRUE, title = "lusc mirna Union")
+groupbyCancer(cancer = 5, scoresOrigAllDataTypes, data_types = "mrna", orig = TRUE, ci = TRUE, title = "lusc mrna Union")
+

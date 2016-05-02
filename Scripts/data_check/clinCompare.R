@@ -556,7 +556,6 @@ clinLuad <- addSurv(clinLuad)
 clinicalDataCompleteLUSC <- addSurv(clinicalDataCompleteLUSC)
 clinLusc <- addSurv(clinLusc)
 
-
 ###########################################################################################
 # Look at relative difference between percentiles. 
 # percent difference for each 
@@ -778,3 +777,73 @@ clinLusc$survTime <-
 # pcaPlot(KircMethylCombatPca, name = 'PCA')
 # 
 # #########################################################################################
+
+
+
+temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$vital_status == 'alive'),])/
+                           nrow(clinicalDataCompleteBRCA))*100 - 
+                          (nrow(clinBrca[which(clinBrca$vital_status == 'alive'),])/nrow(clinBrca))*100, 2)
+temp.diff_KIRC <- round((nrow(clinicalDataCompleteKIRC[which(clinicalDataCompleteKIRC$vital_status == 'alive'),])/
+                           nrow(clinicalDataCompleteKIRC))*100 - 
+                          (nrow(clinKirc[which(clinKirc$vital_status == 'alive'),])/nrow(clinKirc))*100, 2)
+temp.diff_LIHC <- round((nrow(clinicalDataCompleteLIHC[which(clinicalDataCompleteLIHC$vital_status == 'alive'),])/
+                           nrow(clinicalDataCompleteLIHC))*100 - 
+                          (nrow(clinLihc[which(clinLihc$vital_status == 'alive'),])/nrow(clinLihc))*100, 2)
+temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$vital_status == 'alive'),])/
+                           nrow(clinicalDataCompleteLUAD))*100 - 
+                          (nrow(clinLuad[which(clinLuad$vital_status == 'alive'),])/nrow(clinLuad))*100, 2)
+temp.diff_LUSC <- round((nrow(clinicalDataCompleteLUSC[which(clinicalDataCompleteLUSC$vital_status == 'alive'),])/
+                           nrow(clinicalDataCompleteLUSC))*100 - 
+                          (nrow(clinLusc[which(clinLusc$vital_status == 'alive'),])/nrow(clinLusc))*100, 2)
+
+} else if (column == 'gender') {
+  temp.diff_BRCA <- round((nrow(clinicalDataCompleteBRCA[which(clinicalDataCompleteBRCA$gender == 'female'),])/
+                             nrow(clinicalDataCompleteBRCA))*100 - 
+                            (nrow(clinBrca[which(clinBrca$gender == 'female'),])/nrow(clinBrca))*100, 2)
+  temp.diff_KIRC <- round((nrow(clinicalDataCompleteKIRC[which(clinicalDataCompleteKIRC$gender == 'female'),])/
+                             nrow(clinicalDataCompleteKIRC))*100 - 
+                            (nrow(clinKirc[which(clinKirc$gender == 'female'),])/nrow(clinKirc))*100, 2)
+  temp.diff_LIHC <- round((nrow(clinicalDataCompleteLIHC[which(clinicalDataCompleteLIHC$gender == 'female'),])/
+                             nrow(clinicalDataCompleteLIHC))*100 - 
+                            (nrow(clinLihc[which(clinLihc$gender == 'female'),])/nrow(clinLihc))*100, 2)
+  temp.diff_LUAD <- round((nrow(clinicalDataCompleteLUAD[which(clinicalDataCompleteLUAD$gender == 'female'),])/
+                             nrow(clinicalDataCompleteLUAD))*100 - 
+                            (nrow(clinLuad[which(clinLuad$gender == 'female'),])/nrow(clinLuad))*100, 2)
+  temp.diff_LUSC <- round((nrow(clinicalDataCompleteLUSC[which(clinicalDataCompleteLUSC$gender == 'female'),])/
+                             nrow(clinicalDataCompleteLUSC))*100 - 
+                            (nrow(clinLusc[which(clinLusc$gender == 'female'),])/nrow(clinLusc))*100, 2)
+  
+} else {
+  
+  if (survObject) {
+    
+    imputeDiff <- function(data) {
+      data <- data[!is.na(data$vital_status),]
+      for (i in 1:nrow(data)) {
+        sub_dat <- data[i,]
+        if (sub_dat$vital_status == 'alive') {
+          sub_dat$survTime <- max(data$survTime, na.rm = T)
+        } 
+        data[i,] <- sub_dat
+      }
+      return(data)
+    }
+    
+    clinicalDataCompleteBRCA <- imputeDiff(clinicalDataCompleteBRCA)
+    clinBrca <- imputeDiff(clinBrca)
+    clinicalDataCompleteKIRC <- imputeDiff(clinicalDataCompleteKIRC)
+    clinKirc <- imputeDiff(clinKirc)
+    clinicalDataCompleteLIHC <- imputeDiff(clinicalDataCompleteLIHC)
+    clinLihc <- imputeDiff(clinLihc)
+    clinicalDataCompleteLUAD <- imputeDiff(clinicalDataCompleteLUAD)
+    clinLuad <- imputeDiff(clinLuad)
+    clinicalDataCompleteLUSC <- imputeDiff(clinicalDataCompleteLUSC)
+    clinLusc <- imputeDiff(clinLusc)
+    
+  }
+  temp.diff_BRCA <- mean(clinicalDataCompleteBRCA[, column], na.rm= T) - mean(clinBrca[, column], na.rm= T)
+  temp.diff_KIRC <- mean(clinicalDataCompleteKIRC[, column], na.rm= T) - mean(clinKirc[, column], na.rm= T)
+  temp.diff_LIHC <- mean(clinicalDataCompleteLIHC[, column], na.rm= T) - mean(clinLihc[, column], na.rm= T)
+  temp.diff_LUAD <- mean(clinicalDataCompleteLUAD[, column], na.rm= T) - mean(clinLuad[, column], na.rm= T)
+  temp.diff_LUSC <- mean(clinicalDataCompleteLUSC[, column], na.rm= T) - mean(clinLusc[, column], na.rm= T)
+  

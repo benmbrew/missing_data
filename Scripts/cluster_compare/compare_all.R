@@ -7,11 +7,13 @@ library(iClusterPlus)
 library(impute)
 library(survival)
 library(dplyr)
+library(sva)
 
 #########################################################################################################
 # initiate folders
 homeFolder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
+dataFolder <- paste(projectFolder, 'Data', sep = '/')
 completeFolder <- paste(projectFolder, "Scripts",
                         "06_Two_Thousand_Features",
                         "cluster_complete_data", 'Results', 'Labels',sep="/")
@@ -34,9 +36,207 @@ idsFolder <- paste(testFolder, "ids", sep="/")
 #########################################################################################################
 # Get ids from data for each cancer
 source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
+dataTypes <- c("methyl", "mirna", "mrna")
 
 # Load the original data
-loadIDs <- function(cancer){
+loadIDs <- function(cancer, combat = FALSE){
+  
+  if (cancer == "KIRC" & combat) {
+    #####################################################################
+    # Load in raw clinical data for kirc
+    transposeDataFrame <- function(df, colnamesInd=1) {
+      variableNames <- df[, colnamesInd]
+      df <- as.data.frame(t(df[, -colnamesInd]))
+      colnames(df) <- variableNames
+      df
+    }
+    
+    
+    extractRelevantColumns <- function(data) {
+      # List of features used for survival analysis
+      features <- c("admin.batch_number",
+                    "patient.bcr_patient_barcode",
+                    "patient.bcr_patient_uuid",
+                    "patient.days_to_death",
+                    "patient.days_to_last_followup",
+                    "patient.days_to_last_known_alive",
+                    "patient.vital_status",
+                    "patient.gender")
+      patientFeatures <- paste("patient", features, sep=".")
+      
+      # Add missing features to the data
+      missingFeaturesInd <- !(features %in% colnames(data))
+      data[features[missingFeaturesInd]] <- NA
+      
+      # Extract and rename the relevant columns
+      data <- data[features]
+      colnames(data) <- features
+      
+      return(data)
+    }
+    
+    
+    loadClinData <- function(cancer = 'KIRC') {
+      #   processingResult <- dataFolder
+      fileSuffix <- "clinical.txt"
+      
+      # Load the data
+      data <- NULL
+      fileName <- paste(cancer, fileSuffix, sep="_")
+      filePath <- paste(dataFolder,fileName,
+                        sep="/")
+      if (file.exists(filePath)) {
+        data <- read.delim(filePath)
+        
+        # Transpose the data
+        data <- transposeDataFrame(data)
+      }
+      
+      return(data)
+    }
+    
+    # Load clinical data with batch number
+    cancer <- 'KIRC'
+    # Process the clinical data
+    clinicalData <- loadClinData(cancer)
+    clinicalData <- extractRelevantColumns(clinicalData)
+    
+    ## remove patient from column names
+    features <- colnames(clinicalData)
+    split <- strsplit(features, '.', fixed = TRUE)
+    keepSplit <- lapply(split, function(x) x[length(x)])
+    features <- unlist(keepSplit)
+    colnames(clinicalData) <- features
+    
+    ######################################################################
+    # Load functions
+    
+    # Note: some functions depend on variables initialized above!
+    # lsaImputation:
+    # -imputedFile, incompleteFile, projectFolder, jvmGBLimit
+    # iClusterClustering:
+    # -numCores
+    source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
+    
+    ######################################################################
+    # Load the original data
+    
+    loadData <- function(dataType, suffix="") {
+      fileName <- paste(cancer, "_", dataType, suffix,".txt", sep="")
+      filePath <- paste(projectFolder, "Data", fileName, sep="/")
+      return(as.matrix(read.delim(filePath)))
+    }
+    
+    numViews <- length(dataTypes)
+    cases <- vector("list", numViews)
+    controls <- vector("list", numViews)
+    
+    # Load the biological data
+    for (v in 1:numViews) {
+      cases[[v]] <- loadData(dataTypes[v], "_cases")
+      controls[[v]] <- loadData(dataTypes[v], "_controls")
+    }
+    
+    #####################################################################
+    # Generate subsets of the cases derived from the set of individuals
+    # which are present in all data types
+    
+    # Extract all cases which appear in all of the data types
+    completeData <- columnIntersection(cases)
+    
+    #####################################################################
+    # subset clinical data by ids in cases
+    # Transform patient IDs to the clinical ID format
+    transformIDFormat <- function(x) {
+      # Keep the first 12 characters
+      x <- substr(x, 1, 12)
+      # Change each "." to "-"
+      x <- gsub(".", "-", x, fixed=TRUE)
+      # Make all letters lowercase
+      x <- tolower(x)
+      
+      return(x)
+    }
+    
+    transformUnionId <- function(x) {
+      # Keep the first 12 characters
+      x <- substr(x, 1, 12)
+      
+      return(x)
+    }
+    
+    unionData <- columnUnion(cases)
+    
+    # Subset the clinical data so that it corresponds to individuals
+    # in the union data
+    
+    for (i in 1:3) {
+      temp.data  <- unionData[[i]]
+      temp.names <- transformUnionId(colnames(temp.data))
+      colnames(temp.data) <- temp.names
+      temp.data <- temp.data[, !duplicated(colnames(temp.data))]
+      unionData[[i]] <- temp.data
+    }
+    
+    # Subset the clinical data so that it corresponds to individuals
+    # in the union data
+    unionIDs <- colnames(unionData[[1]])
+    unionIDs <- transformIDFormat(unionIDs)
+    # Find the position of the patient IDs in the clinical data
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    clinicalInd <- match(unionIDs, clinicalIDs)
+    clinicalData <- clinicalData[clinicalInd, ]
+    
+    # Subset clinical data and completeData by clinicalData
+    clinicalData <- clinicalData[rowSums(is.na(clinicalData)) < ncol(clinicalData),]
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    unionInd <- match(clinicalIDs, unionIDs)
+    
+    clinicalData$days_to_death <- as.numeric(clinicalData$days_to_death)
+    clinicalData$days_to_last_followup <- as.numeric(clinicalData$days_to_last_followup)
+    ###### Run combat function 
+    for (i in 1:numViews) {
+      temp.unionData <- unionData[[i]]
+      temp.unionData <- temp.unionData[,unionInd]
+      temp.2.unionData <- temp.unionData[rowSums(temp.unionData, na.rm = T) != 0,]
+      temp.modcombat <- model.matrix(~1, data = clinicalData)
+      temp.batch <- clinicalData$gender
+      temp_combat = ComBat(dat=temp.2.unionData, batch=temp.batch, mod=temp.modcombat, par.prior=TRUE, prior.plots=FALSE)
+      unionData[[i]] <- temp_combat
+    }
+    
+    unionIds <- colnames(unionData[[1]])
+    
+    
+    completeIDs <- colnames(completeData[[1]])
+    completeIDs <- transformIDFormat(completeIDs)
+    # Find the position of the patient IDs in the clinical data
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    clinicalInd <- match(completeIDs, clinicalIDs)
+    clinicalData <- clinicalData[clinicalInd, ]
+    # Subset clinical data and completeData by clinicalData
+    clinicalData <- clinicalData[rowSums(is.na(clinicalData)) < ncol(clinicalData),]
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+    completeInd <- match(clinicalIDs, completeIDs)
+    
+    ###### Run combat function 
+    for (i in 1:numViews) {
+      temp.completeData <- completeData[[i]]
+      temp.completeData <- temp.completeData[,completeInd]
+      temp.2.completeData <- temp.completeData[rowSums(temp.completeData) != 0,]
+      temp.modcombat <- model.matrix(~1, data = clinicalData)
+      temp.batch <- clinicalData$gender
+      temp_combat = ComBat(dat=temp.2.completeData, batch=temp.batch, mod=temp.modcombat, par.prior=TRUE, prior.plots=FALSE)
+      completeData[[i]] <- temp_combat
+    }
+    
+    
+    completeIds <- transformUnionId(colnames(completeData[[1]]) )
+    
+    return(list(first = completeIds, second = unionIds))
+      
+  } else { 
+  
   dataTypes <- c("methyl", "mirna", "mrna")
   loadData <- function(dataType, suffix="") {
     fileName <- paste(cancer, "_", dataType, suffix,".txt", sep="")
@@ -72,6 +272,8 @@ loadIDs <- function(cancer){
     
   return(list(first = completeIds, second = unionIds))
   
+  }
+  
 }
   
 # Lod cancer ids
@@ -79,6 +281,7 @@ brca_ids <-loadIDs(cancer = 'BRCA')
 kirc_ids <-loadIDs(cancer = 'KIRC')
 lihc_ids <-loadIDs(cancer = 'LIHC')
 luad_ids <-loadIDs(cancer = 'LUAD')
+combat_ids <- loadIDs(cancer = 'KIRC', combat = TRUE)
 
 ##########################################################################################################
 # BRCA, compare clusters from complete, compete imputed, and union
@@ -795,4 +998,185 @@ luad_snf_rand_common <- findCommonCluster(luad_com_snf_rand, luad_union_snf_rand
 luad_snf_self_common <- findCommonCluster(luad_com_snf_self, luad_union_snf_self)
 luad_snf_reg_common <- findCommonCluster(luad_com_snf_reg, luad_union_snf_reg)
 luad_snf_med_common <- findCommonCluster(luad_com_snf_med, luad_union_snf_med)
+
+##########################################################################################################
+# kirc, compare clusters from complete, compete imputed, and union
+
+# get combat IDs
+combat_complete_ids <- combat_ids[[1]]
+combat_union_ids <- combat_ids[[2]]
+
+# Get labels for each clustering type, from the intersection for combat
+combat_com_hier <- as.factor(t(read.table(paste0(completeFolder, '/6_1.txt'))))
+combat_com_iclus <- as.factor(t(read.table(paste0(completeFolder, '/6_2.txt'))))
+combat_com_snf <- as.factor(t(read.table(paste0(completeFolder, '/6_3.txt'))))
+
+# get labels for kirc intersection imputed
+# hier
+combat_com_hier_knn <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_knn_hier_comp.txt'))))
+combat_com_hier_lls <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lls_hier_comp.txt'))))
+combat_com_hier_lsa <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lsa_hier_comp.txt'))))
+combat_com_hier_rand <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_rand_hier_comp.txt'))))
+
+#iclust
+combat_com_iclus_knn <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_knn_iclus_comp.txt'))))
+combat_com_iclus_lls <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lls_iclus_comp.txt'))))
+combat_com_iclus_lsa <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lsa_iclus_comp.txt'))))
+combat_com_iclus_rand <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_rand_iclus_comp.txt'))))
+
+#SNF
+combat_com_snf_knn <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_knn_snf_comp.txt'))))
+combat_com_snf_lls <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lls_snf_comp.txt'))))
+combat_com_snf_lsa <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_lsa_snf_comp.txt'))))
+combat_com_snf_rand <- as.factor(t(read.table(paste0(imputeFolder, '/combat', '/combat_rand_snf_comp.txt'))))
+combat_com_snf_self <- as.factor(t(read.table(paste0(similarityFolder, '/combat', '/combat_self_snf_comp.txt'))))
+combat_com_snf_med <- as.factor(t(read.table(paste0(similarityFolder, '/combat', '/combat_med_snf_comp.txt' ))))
+combat_com_snf_reg <- as.factor(t(read.table(paste0(similarityFolder, '/combat', '/combat_reg_snf_comp.txt' ))))
+
+###################################################################################################
+# get labels for kirc union
+
+# Hier
+combat_union_hier_knn  <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_knn_hier_union.txt'))))
+combat_union_hier_lls <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lls_hier_union.txt'))))
+combat_union_hier_lsa <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lsa_hier_union.txt'))))
+combat_union_hier_rand <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_rand_hier_union.txt'))))
+
+#iclust
+combat_union_iclus_knn <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_knn_iclus_union.txt'))))
+combat_union_iclus_lls <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lls_iclus_union.txt'))))
+combat_union_iclus_lsa <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lsa_iclus_union.txt'))))
+combat_union_iclus_rand <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_rand_iclus_union.txt'))))
+
+
+# SNF
+combat_union_snf_knn <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_knn_snf_union.txt'))))
+combat_union_snf_lls <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lls_snf_union.txt'))))
+combat_union_snf_lsa <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_lsa_snf_union.txt'))))
+combat_union_snf_rand <- as.factor(t(read.table(paste0(imputeOrigFolder, '/combat/', 'combat_rand_snf_union.txt'))))
+combat_union_snf_self <- as.factor(t(read.table(paste0(similarityOrigFolder, '/combat', '/combat_self_snf_union.txt' ))))
+combat_union_snf_med <- as.factor(t(read.table(paste0(similarityOrigFolder, '/combat', '/combat_med_snf_union.txt' ))))
+combat_union_snf_reg <- as.factor(t(read.table(paste0(similarityOrigFolder, '/combat', '/combat_reg_snf_union.txt' ))))
+
+##########################################################################################################
+# Compare labels for each clustering type 
+
+# Hierarchical 
+combat_hier_stat <- rbind(
+  append('combat_com_hier', summary(as.factor(combat_com_hier))),
+  append('combat_com_hier_knn', summary(as.factor(combat_com_hier_knn))),
+  append('combat_com_hier_lls', summary(as.factor(combat_com_hier_lls))),
+  append('combat_com_hier_lsa', summary(as.factor(combat_com_hier_lsa))),
+  append('combat_com_hier_rand', summary(as.factor(combat_com_hier_rand))),
+  append('combat_union_hier_knn', summary(as.factor(combat_union_hier_knn))),
+  append('combat_union_hier_lls', summary(as.factor(combat_union_hier_lls))),
+  append('combat_union_hier_lsa', summary(as.factor(combat_union_hier_lsa))),
+  append('combat_union_hier_rand', summary(as.factor(combat_union_hier_rand)))
+  
+)
+
+# Icluster
+combat_iclust_stat <- rbind(
+  append('combat_com_iclust', summary(as.factor(combat_com_iclus))),
+  append('combat_com_iclust_knn', summary(as.factor(combat_com_iclus_knn))),
+  append('combat_com_iclust_lls', summary(as.factor(combat_com_iclus_lls))),
+  append('combat_com_iclust_lsa', summary(as.factor(combat_com_iclus_lsa))),
+  append('combat_com_iclust_rand', summary(as.factor(combat_com_iclus_rand))),
+  append('combat_union_iclust_knn', summary(as.factor(combat_union_iclus_knn))),
+  append('combat_union_iclust_lls', summary(as.factor(combat_union_iclus_lls))),
+  append('combat_union_iclust_lsa', summary(as.factor(combat_union_iclus_lsa))),
+  append('combat_union_iclust_rand', summary(as.factor(combat_union_iclus_rand)))
+  
+)
+
+
+# SNF
+combat_snf_stat <- rbind(
+  append('combat_com_snf', summary(as.factor(combat_com_snf))),
+  append('combat_com_snf_self', summary(as.factor(combat_com_snf_self))),
+  append('combat_com_snf_med', summary(as.factor(combat_com_snf_med))),
+  append('combat_com_snf_reg', summary(as.factor(combat_com_snf_reg))),
+  append('combat_union_snf_self', summary(as.factor(combat_union_snf_self))),
+  append('combat_union_snf_med', summary(as.factor(combat_union_snf_med))),
+  append('combat_union_snf_reg', summary(as.factor(combat_union_snf_reg)))
+)
+
+
+
+# Merge ids with labels and get clinical information for each cluster
+
+# look at groups of ids in complete, complete_impute, and union
+# join ids and then join each label groupd
+combat_com_hier <- as.data.frame(cbind(label = combat_com_hier, id = combat_complete_ids))
+combat_com_hier_knn <- as.data.frame(cbind(label = combat_com_hier_knn, id = combat_complete_ids))
+combat_com_hier_lls <- as.data.frame(cbind(label = combat_com_hier_lls, id = combat_complete_ids))
+combat_com_hier_lsa <- as.data.frame(cbind(label = combat_com_hier_lsa, id = combat_complete_ids))
+combat_com_hier_rand <-  as.data.frame(cbind(label = combat_union_hier_rand, id = combat_union_ids))
+combat_union_hier_knn <- as.data.frame(cbind(label = combat_union_hier_knn, id = combat_union_ids))
+combat_union_hier_lls <- as.data.frame(cbind(label = combat_union_hier_lls, id = combat_union_ids))
+combat_union_hier_lsa <- as.data.frame(cbind(label = combat_union_hier_lsa, id = combat_union_ids))
+combat_union_hier_rand <-  as.data.frame(cbind(label = combat_union_hier_rand, id = combat_union_ids))
+
+combat_com_iclus <- as.data.frame(cbind(label = combat_com_iclus, id = combat_complete_ids))
+combat_com_iclus_knn <- as.data.frame(cbind(label = combat_com_iclus_knn, id = combat_complete_ids))
+combat_com_iclus_lls <- as.data.frame(cbind(label = combat_com_iclus_lls, id = combat_complete_ids))
+combat_com_iclus_lsa <- as.data.frame(cbind(label = combat_com_iclus_lsa, id = combat_complete_ids))
+combat_com_iclus_rand <-  as.data.frame(cbind(label = combat_union_iclus_rand, id = combat_union_ids))
+combat_union_iclus_knn <- as.data.frame(cbind(label = combat_union_iclus_knn, id = combat_union_ids))
+combat_union_iclus_lls <- as.data.frame(cbind(label = combat_union_iclus_lls, id = combat_union_ids))
+combat_union_iclus_lsa <- as.data.frame(cbind(label = combat_union_iclus_lsa, id = combat_union_ids))
+combat_union_iclus_rand <-  as.data.frame(cbind(label = combat_union_iclus_rand, id = combat_union_ids))
+
+combat_com_snf <- as.data.frame(cbind(label = combat_com_snf, id = combat_complete_ids))
+combat_com_snf_knn <- as.data.frame(cbind(label = combat_com_snf_knn, id = combat_complete_ids))
+combat_com_snf_lls <- as.data.frame(cbind(label = combat_com_snf_lls, id = combat_complete_ids))
+combat_com_snf_lsa <- as.data.frame(cbind(label = combat_com_snf_lsa, id = combat_complete_ids))
+combat_com_snf_rand <-  as.data.frame(cbind(label = combat_union_snf_rand, id = combat_union_ids))
+combat_com_snf_self <- as.data.frame(cbind(label = combat_com_snf_self, id = combat_complete_ids))
+combat_com_snf_med <- as.data.frame(cbind(label = combat_com_snf_med, id = combat_complete_ids))
+combat_com_snf_reg <- as.data.frame(cbind(label = combat_com_snf_reg, id = combat_complete_ids))
+combat_union_snf_knn <- as.data.frame(cbind(label = combat_union_snf_knn, id = combat_union_ids))
+combat_union_snf_lls <- as.data.frame(cbind(label = combat_union_snf_lls, id = combat_union_ids))
+combat_union_snf_lsa <- as.data.frame(cbind(label = combat_union_snf_lsa, id = combat_union_ids))
+combat_union_snf_rand <-  as.data.frame(cbind(label = combat_union_snf_rand, id = combat_union_ids))
+combat_union_snf_self <-  as.data.frame(cbind(label = combat_union_snf_self, id = combat_union_ids))
+combat_union_snf_med <-  as.data.frame(cbind(label = combat_union_snf_med, id = combat_union_ids))
+combat_union_snf_reg <-  as.data.frame(cbind(label = combat_union_snf_reg, id = combat_union_ids))
+
+
+findCommonCluster <- function(data1, data2) {
+  numClus <- 5
+  data_intersect_union <- data2[data2$id %in% data1$id,] # intersection of union
+  data_intersect <- left_join(data_intersect_union, data1, by = 'id') # join intersection of union with intersection
+  common_clusters <- matrix(,0,5)
+  cluster_compare <- matrix(,0,5)
+  for(i in 1:numClus){
+    sub_intersect <- data_intersect[data_intersect$label.y == i,]
+    for(j in 1:numClus){
+      sub_union <- data_intersect[data_intersect$label.x == j,]
+      cluster_compare[j] <- round((sum(sub_intersect$id %in% sub_union$id)/nrow(sub_intersect))*100, 2)
+    }
+    common_clusters <- rbind(common_clusters, cluster_compare)
+  }
+  return(common_clusters)
+}
+
+combat_hier_knn_common <- findCommonCluster(combat_com_hier_knn, combat_union_hier_knn)
+combat_hier_lls_common <- findCommonCluster(combat_com_hier_lls, combat_union_hier_lls)
+combat_hier_lsa_common <- findCommonCluster(combat_com_hier_lsa, combat_union_hier_lsa)
+combat_hier_rand_common <- findCommonCluster(combat_com_hier_rand, combat_union_hier_rand)
+
+combat_iclus_knn_common <- findCommonCluster(combat_com_iclus_knn, combat_union_iclus_knn)
+combat_iclus_lls_common <- findCommonCluster(combat_com_iclus_lls, combat_union_iclus_lls)
+combat_iclus_lsa_common <- findCommonCluster(combat_com_iclus_lsa, combat_union_iclus_lsa)
+combat_iclus_rand_common <- findCommonCluster(combat_com_iclus_rand, combat_union_iclus_rand)
+
+combat_snf_knn_common <- findCommonCluster(combat_com_snf_knn, combat_union_snf_knn)
+combat_snf_lls_common <- findCommonCluster(combat_com_snf_lls, combat_union_snf_lls)
+combat_snf_lsa_common <- findCommonCluster(combat_com_snf_lsa, combat_union_snf_lsa)
+combat_snf_rand_common <- findCommonCluster(combat_com_snf_rand, combat_union_snf_rand)
+combat_snf_self_common <- findCommonCluster(combat_com_snf_self, combat_union_snf_self)
+combat_snf_reg_common <- findCommonCluster(combat_com_snf_reg, combat_union_snf_reg)
+combat_snf_med_common <- findCommonCluster(combat_com_snf_med, combat_union_snf_med)
+
 
