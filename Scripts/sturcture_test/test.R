@@ -1,5 +1,6 @@
 ################################################################################################
 # This script tests if the missing data is random or structured
+library(MASS)
 ###############################################################################
 # Initialize folders
 homeFolder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
@@ -73,7 +74,7 @@ loadData <- function(cancer) {
     unionIDs <- colnames(unionData[[1]])
     unionIDs <- transformIDFormat(unionIDs)
     # Find the position of the patient IDs in the clinical data
-    clinicalIDs <- as.character(clinicalData$patient.bcr_patient_barcode)
+    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
     clinicalInd <- match(unionIDs, clinicalIDs)
     clinicalData <- clinicalData[clinicalInd, ]
   
@@ -147,23 +148,166 @@ lusc_methyl <- lusc_data_full[[1]]
 lusc_mirna <- lusc_data_full[[2]]
 lusc_mrna <- lusc_data_full[[3]]
 
-#Merge data
-dataMerge <- function(data, clinical){
-  data <- as.data.frame(t(data))
-  data <- cbind('id' = row.names(data), data)
-  row.names(data) <- NULL
-  names(clinical)[1] <- 'id'
-  data <- inner_join(data, clinical, by = 'id')
-  #data$days_to_death[is.na(as.numeric(data$days_to_death))] <- max(clinical$days_to_death, na.rm = T)
+# Add surv time to each clinical data 
+survObject <- function(data) {
+  
+  data$survTime <- data$days_to_death
+  
+  # Replace missing survival times with days to last follow up
+  missingSurvInd <- is.na(data$survTime)
+  lastFollowup <- data$days_to_last_followup
+  data$survTime[missingSurvInd] <- lastFollowup[missingSurvInd]
+  
   return(data)
+  
 }
 
-# 1) Could do t test or chi squared test
-# 2) LittleMCAR on clinical data d 
+brca_clin <- survObject(brca_clin)
+kirc_clin <- survObject(kirc_clin)
+lihc_clin <- survObject(lihc_clin)
+luad_clin <- survObject(luad_clin)
+lusc_clin <- survObject(lusc_clin)
+
+###########################################################################################################
+# Try to deal with structured missing data first with a t test or chi squared test 
+# 1) Could do t test or chi squared test- create dummy variables for whether a variable is missing.
+# 
+# 1 = missing
+# 0 = observed
+# 
+# You can then run t-tests and chi-square tests between this variable and other variables 
+# in the data set to see if the missingness on this variable is related to the values of other variables.
+
+# Write function that adds a column in clinical data for TRUE if missing in that data type 
+
+addMissing <- function(methyl, mirna, mrna, clin) {
+  
+  clin$methyl_missing <- apply(methyl, 2, function(x) all(is.na(x)))
+  clin$mirna_missing <- apply(mirna, 2, function(x) all(is.na(x)))
+  clin$mrna_missing <- apply(mrna, 2, function(x) all(is.na(x)))
+  
+  return(clin)
+}
+
+brca_clin <- addMissing(brca_methyl, brca_mirna, brca_mrna, brca_clin)
+kirc_clin <- addMissing(kirc_methyl, kirc_mirna, kirc_mrna, kirc_clin)
+lihc_clin <- addMissing(lihc_methyl, lihc_mirna, lihc_mrna, lihc_clin)
+luad_clin <- addMissing(luad_methyl, luad_mirna, luad_mrna, luad_clin)
+lusc_clin <- addMissing(lusc_methyl, lusc_mirna, lusc_mrna, lusc_clin)
+
+# Run t test on missing variables and each varible in clinical data (including survTime)
+
+tTest <- function(data, data_type, column) {
+  data <- data[rowSums(is.na(data)) < 7,]
+  
+  t.test(x = data[,column][which(data[,data_type] == "TRUE")],
+         y = data[,column][which(data[,data_type] == "FALSE")])
+}
+
+# As the p-value 0.4828 is greater than the .05 significance level, we do not reject the null 
+# hypothesis that the smoking habit is independent of the exercise level of the students.
+cTest <- function(data, data_type, column) {
+  
+  data <- data[rowSums(is.na(data)) < 7,]
+  
+
+  tbl = table(data[,data_type], data[,column]) 
+  chisq.test(tbl)
+  
+}
+  
+#### brca
+tTest(brca_clin, "methyl_missing", "days_to_death")
+tTest(brca_clin, "mirna_missing", "days_to_death")
+tTest(brca_clin, "mrna_missing", "days_to_death")
+
+tTest(brca_clin, "methyl_missing", "days_to_last_followup")
+tTest(brca_clin, "mirna_missing", "days_to_last_followup")
+tTest(brca_clin, "mrna_missing", "days_to_last_followup")
+
+tTest(brca_clin, "methyl_missing", "survTime")
+tTest(brca_clin, "mirna_missing", "survTime")
+tTest(brca_clin, "mrna_missing", "survTime")
+
+cTest(brca_clin, "methyl_missing", "vital_status")
+cTest(brca_clin, "mirna_missing", "vital_status")
+cTest(brca_clin, "mrna_missing", "vital_status")
+
+#### kirc
+tTest(kirc_clin, "methyl_missing", "days_to_death")
+tTest(kirc_clin, "mirna_missing", "days_to_death")
+tTest(kirc_clin, "mrna_missing", "days_to_death")
+
+tTest(kirc_clin, "methyl_missing", "days_to_last_followup")
+tTest(kirc_clin, "mirna_missing", "days_to_last_followup")
+tTest(kirc_clin, "mrna_missing", "days_to_last_followup")
+
+tTest(kirc_clin, "methyl_missing", "survTime")
+tTest(kirc_clin, "mirna_missing", "survTime")
+tTest(kirc_clin, "mrna_missing", "survTime")
+
+cTest(kirc_clin, "methyl_missing", "vital_status")
+cTest(kirc_clin, "mirna_missing", "vital_status")
+cTest(kirc_clin, "mrna_missing", "vital_status")
+
+#### lihc
+tTest(lihc_clin, "methyl_missing", "days_to_death")
+tTest(lihc_clin, "mirna_missing", "days_to_death")
+tTest(lihc_clin, "mrna_missing", "days_to_death")
+
+tTest(lihc_clin, "methyl_missing", "days_to_last_followup")
+tTest(lihc_clin, "mirna_missing", "days_to_last_followup")
+tTest(lihc_clin, "mrna_missing", "days_to_last_followup")
+
+tTest(lihc_clin, "methyl_missing", "survTime")
+tTest(lihc_clin, "mirna_missing", "survTime")
+tTest(lihc_clin, "mrna_missing", "survTime")
+
+cTest(lihc_clin, "methyl_missing", "vital_status")
+cTest(lihc_clin, "mirna_missing", "vital_status")
+cTest(lihc_clin, "mrna_missing", "vital_status")
+
+#### luad
+tTest(luad_clin, "methyl_missing", "days_to_death")
+tTest(luad_clin, "mirna_missing", "days_to_death")
+tTest(luad_clin, "mrna_missing", "days_to_death")
+
+tTest(luad_clin, "methyl_missing", "days_to_last_followup")
+tTest(luad_clin, "mirna_missing", "days_to_last_followup")
+tTest(luad_clin, "mrna_missing", "days_to_last_followup")
+
+tTest(luad_clin, "methyl_missing", "survTime")
+tTest(luad_clin, "mirna_missing", "survTime")
+tTest(luad_clin, "mrna_missing", "survTime")
+
+cTest(luad_clin, "methyl_missing", "vital_status")
+cTest(luad_clin, "mirna_missing", "vital_status")
+cTest(luad_clin, "mrna_missing", "vital_status")
+
+#### lusc
+tTest(lusc_clin, "methyl_missing", "days_to_death")
+tTest(lusc_clin, "mirna_missing", "days_to_death")
+tTest(lusc_clin, "mrna_missing", "days_to_death")
+
+tTest(lusc_clin, "methyl_missing", "days_to_last_followup")
+tTest(lusc_clin, "mirna_missing", "days_to_last_followup")
+tTest(lusc_clin, "mrna_missing", "days_to_last_followup")
+
+tTest(lusc_clin, "methyl_missing", "survTime")
+tTest(lusc_clin, "mirna_missing", "survTime")
+tTest(lusc_clin, "mrna_missing", "survTime")
+
+cTest(lusc_clin, "methyl_missing", "vital_status")
+cTest(lusc_clin, "mirna_missing", "vital_status")
+cTest(lusc_clin, "mrna_missing", "vital_status")
+
+############################################################################################################
+# 2) LittleMCAR on clinical data 
+
+
+############################################################################################################
 # 3) logistic regression of each clincal variable on a 1/0 that indicates missingness.
+
+#############################################################################################################
 # 4) MissMech (https://cran.r-project.org/web/packages/MissMech/MissMech.pdf)
-
-
-
-
 
