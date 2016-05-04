@@ -1,15 +1,13 @@
 ################################################################################################
-# This script tests if the missing data is random or structured
+# This script tests if the missing data is random or structured in complete data
 library(MASS)
-library(BaylorEdPsych)
-library(mvnmle)
 ###############################################################################
 # Initialize folders
 homeFolder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
 testFolder <- paste(projectFolder, "Scripts",
                     "06_Two_Thousand_Features",
-                    "evaluate_original_imputation", sep="/")
+                    "evaluate_imputation", sep="/")
 dataFolder <- paste(projectFolder, 'Data', sep = '/')
 resultsFolder <- paste(testFolder, "Results", sep="/")
 
@@ -56,31 +54,39 @@ loadData <- function(cancer) {
   }
   
   
-    # Transform patient IDs to the clinical ID format
-    transformIDFormat <- function(x) {
-      # Keep the first 12 characters
-      x <- substr(x, 1, 12)
-      # Change each "." to "-"
-      x <- gsub(".", "-", x, fixed=TRUE)
-      # Make all letters lowercase
-      x <- tolower(x)
-      
-      return(x)
-    }
+  # Transform patient IDs to the clinical ID format
+  transformIDFormat <- function(x) {
+    # Keep the first 12 characters
+    x <- substr(x, 1, 12)
+    # Change each "." to "-"
+    x <- gsub(".", "-", x, fixed=TRUE)
+    # Make all letters lowercase
+    x <- tolower(x)
     
-    # Extract all cases which appear in at least one of the data types
-    unionData <- columnUnion(cases)
-    
-    # Subset the clinical data so that it corresponds to individuals
-    # in the union data
-    unionIDs <- colnames(unionData[[1]])
-    unionIDs <- transformIDFormat(unionIDs)
-    # Find the position of the patient IDs in the clinical data
-    clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
-    clinicalInd <- match(unionIDs, clinicalIDs)
-    clinicalData <- clinicalData[clinicalInd, ]
+    return(x)
+  }
   
-    return(list(first = unionData, second = clinicalData))
+  # Extract all cases which appear in at least one of the data types
+  completeData <- columnIntersection(cases)
+  
+  # Subset the clinical data so that it corresponds to individuals
+  # in the complete data
+  completeIDs <- colnames(completeData[[1]])
+  completeIDs <- transformIDFormat(completeIDs)
+  # Find the position of the patient IDs in the clinical data
+  clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
+  clinicalInd <- match(completeIDs, clinicalIDs)
+  clinicalData <- clinicalData[clinicalInd, ]
+  
+  # Generate an incomplete data set by extracting all cases which appear
+  # in all of the data types and removing some of their samples
+  
+  set.seed(1)
+  
+  incompleteIntersection <- generateIncompleteIntersection(cases)
+  incompleteData <- incompleteIntersection$incomplete
+  
+  return(list(first = incompleteData, second = clinicalData))
 }
 
 #### Load in cases (full_data), not complete.
@@ -171,6 +177,14 @@ luad_clin <- survObject(luad_clin)
 lusc_clin <- survObject(lusc_clin)
 
 ###########################################################################################################
+# Try to deal with structured missing data first with a t test or chi squared test 
+# 1) Could do t test or chi squared test- create dummy variables for whether a variable is missing.
+# 
+# 1 = missing
+# 0 = observed
+# 
+# You can then run t-tests and chi-square tests between this variable and other variables 
+# in the data set to see if the missingness on this variable is related to the values of other variables.
 
 # Write function that adds a column in clinical data for TRUE if missing in that data type 
 
@@ -189,8 +203,7 @@ lihc_clin <- addMissing(lihc_methyl, lihc_mirna, lihc_mrna, lihc_clin)
 luad_clin <- addMissing(luad_methyl, luad_mirna, luad_mrna, luad_clin)
 lusc_clin <- addMissing(lusc_methyl, lusc_mirna, lusc_mrna, lusc_clin)
 
-### MAR
-Run t test on missing variables and each varible in clinical data (including survTime)
+# Run t test on missing variables and each varible in clinical data (including survTime)
 
 tTest <- function(data, data_type, column) {
   data <- data[rowSums(is.na(data)) < 7,]
@@ -205,12 +218,12 @@ cTest <- function(data, data_type, column) {
   
   data <- data[rowSums(is.na(data)) < 7,]
   
-
+  
   tbl = table(data[,data_type], data[,column]) 
   chisq.test(tbl)
   
 }
-  
+
 #### brca
 tTest(brca_clin, "methyl_missing", "days_to_death")
 tTest(brca_clin, "mirna_missing", "days_to_death")
@@ -301,144 +314,8 @@ cTest(lusc_clin, "mrna_missing", "vital_status")
 # A large p-value (> 0.05) indicates weak evidence against the null hypothesis, 
 # so you fail to reject the null hypothesis, in this case the null hypothesis is 
 # that the data is MCAR, no patterns exists in the missing data.
-# Little’s MCAR test is the most common test for missing cases being missing
-# completely at random. If the p value for Little's MCAR test is not significant, then
-# the data may be assumed to be MCAR and missingness is assumed not to matter
-# for the analysis. 
 
-# Missing completely at random (MCAR): data are missing independently of both
-# observed and unobserved data. Example: a participant flips a coin to decide whether to complete the depression survey.
-# Missing at random (MAR): given the observed data, data are missing
-# independently of unobserved data. Example: male participants are more likely to refuse to fill out the depression
-# survey, but it does not depend on the level of their depression.
 
-# Roughly speaking, I think the "Little's test" you refer to looks to see if any observed variables are 
-# predictive of the chance of other variables being missing, though I do not have the details at hand. 
-# If there are variables predictive of non-response, the missingness mechanism is not MCAR but rather MAR, 
-# and this needs to be kept in mind when doing the analysis (either by multiple imputation, EM algorithm or by 
-# appropriate modelling) in order to ensure estimates and inferences are valid under MAR.
-
-# Alternatively, Little (1988) provides a likelihood ratio test of
-# the assumption of missing completely at random (MCAR). This test is part of
-# the program BMDPAM, in the BMDP (Dixon, 1992) statistical package. In
-# this example, the value of the likelihood ratio test is 2  256:61 p  0:000,
-# indicating that the data in this example are not missing completely at random
-# 
-# A likelihood ratio test for MCAR exists. In statistics, a likelihood ratio test is a statistical 
-# test used to compare the goodness of fit of two models, 
-# one of which (the null model) is a special case of the other (the alternative model). 
-
-# Add column for where TRUE is NA and false is 1 
-LittleMcarMethyl <- function(data, vital_status = FALSE) {
-  
-  data$methyl_missing <- as.integer(ifelse(data$methyl_missing == TRUE, NA, 1))
-  data$mirna_missing <-NULL
-  data$mrna_missing <- NULL
-  data <- data[rowSums(is.na(data)) < 8,]
-  data <- data[!is.na(data$survTime),]
-  data <- data[!is.na(data$vital_status),]
-  data$vital_status <- data$vital_status
-  missingInd <- is.na(data$methyl_missing)
-  if (vital_status) {
-    data$vital_status[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-  } else {
-    data$survTime[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-    
-  }
-}
-
-LittleMcarMirna <- function(data, vital_status = FALSE) {
-  data$mirna_missing <- as.integer(ifelse(data$mirna_missing == TRUE, NA, 1))
-  data$methyl_missing <-NULL
-  data$mrna_missing <- NULL
-  data <- data[rowSums(is.na(data)) < 8,]
-  data <- data[!is.na(data$survTime),]
-  data <- data[!is.na(data$vital_status),]
-  data$vital_status <- data$vital_status
-  missingInd <- is.na(data$mirna_missing)
-  if (vital_status) {
-    data$vital_status[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-  } else {
-    data$survTime[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-    
-  }
-  
-}
-
-LittleMcarMrna <- function(data, vital_status = FALSE) {
-  data$mrna_missing <- as.integer(ifelse(data$mrna_missing == TRUE, NA, 1))
-  data$mirna_missing <-NULL
-  data$methyl_missing <- NULL
-  data <- data[rowSums(is.na(data)) < 8,]
-  data <- data[!is.na(data$survTime),]
-  data <- data[!is.na(data$vital_status),]
-  data$vital_status <- data$vital_status
-  missingInd <- is.na(data$mrna_missing)
-  if (vital_status) {
-    data$vital_status[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-  } else {
-    data$survTime[missingInd] <- NA
-    data <- data[, c(6,7)]
-    
-    LittleMCAR(data)
-    
-  }
-}
-
-#BRCA
-LittleMcarMethyl(brca_clin)$p.value
-LittleMcarMethyl(brca_clin, vital_status = TRUE)$p.value
-LittleMcarMirna(brca_clin)$p.value
-LittleMcarMirna(brca_clin, vital_status = TRUE)$p.value
-LittleMcarMrna(brca_clin)$p.value
-LittleMcarMrna(brca_clin, vital_status = TRUE)$p.value
-
-#KIRC
-LittleMcarMethyl(kirc_clin)$p.value
-LittleMcarMethyl(kirc_clin, vital_status = TRUE)$p.value
-LittleMcarMirna(kirc_clin)$p.value
-LittleMcarMirna(kirc_clin, vital_status = TRUE)$p.value
-LittleMcarMrna(kirc_clin)$p.value
-LittleMcarMrna(kirc_clin, vital_status = TRUE)$p.value
-
-#LIHC
-LittleMcarMethyl(lihc_clin)$p.value
-LittleMcarMethyl(lihc_clin, vital_status = TRUE)$p.value
-LittleMcarMirna(lihc_clin)$p.value
-LittleMcarMirna(lihc_clin, vital_status = TRUE)$p.value
-LittleMcarMrna(lihc_clin)$p.value
-LittleMcarMrna(lihc_clin, vital_status = TRUE)$p.value
-
-#LUAD
-LittleMcarMethyl(luad_clin)$p.value
-LittleMcarMethyl(luad_clin, vital_status = TRUE)$p.value
-LittleMcarMirna(luad_clin)$p.value
-LittleMcarMirna(luad_clin, vital_status = TRUE)$p.value
-LittleMcarMrna(luad_clin)$p.value
-LittleMcarMrna(luad_clin, vital_status = TRUE)$p.value
-
-#LUSC
-LittleMcarMethyl(lusc_clin)$p.value
-LittleMcarMethyl(lusc_clin, vital_status = TRUE)$p.value
-LittleMcarMirna(lusc_clin)$p.value
-LittleMcarMirna(lusc_clin, vital_status = TRUE)$p.value
-LittleMcarMrna(lusc_clin)$p.value
-LittleMcarMrna(lusc_clin, vital_status = TRUE)$p.value
 
 
 ############################################################################################################
@@ -550,4 +427,3 @@ summary(glm(mrna_missing ~ vital_status + survTime, data=lusc_clin, family=binom
 
 #############################################################################################################
 # 4) MissMech (https://cran.r-project.org/web/packages/MissMech/MissMech.pdf)
-
