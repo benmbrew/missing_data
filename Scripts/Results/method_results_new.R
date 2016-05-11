@@ -15,12 +15,15 @@ source(paste0(results_folder, '/Lib/helpers.R'))
 
 # Load data
 scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
+scoresNormalClust <- read.csv(paste0(results_folder, '/scoresTwoThousandClust.csv'))
 scoresNormal1000 <- read.csv(paste0(results_folder, '/scoresTwoThousandDup1000.csv'))
 scoresNormal3000 <- read.csv(paste0(results_folder, '/scoresTwoThousandDup3000.csv'))
 
 
 scoresNormalOrig <- read.csv(paste0(results_folder, '/scoresTwoThousandOrig.csv'))
 scoresNormalOrigDup <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup.csv'))
+scoresNormalOrigDupClust <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDupClust.csv'))
+
 scoresNormalOrigDup1000 <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup1000.csv'))
 scoresNormalOrigDup3000 <- read.csv(paste0(results_folder, '/scoresOrigTwoThousandDup3000.csv'))
 
@@ -32,6 +35,12 @@ scoresCombat <- read.csv(paste0(results_folder, '/scoresCombat.csv'))
 scoresCombatDup <- read.csv(paste0(results_folder, '/scoresCombatDup.csv'))
 scoresCombatOrigDup <- read.csv(paste0(results_folder, '/scoresCombatOrigDup.csv'))
 
+scoresCombatDup3 <- read.csv(paste0(results_folder, '/scoresCombatDup3.csv'))
+scoresCombatOrigDup3 <- read.csv(paste0(results_folder, '/scoresCombatOrigDup3.csv'))
+
+scoresCombatDup4 <- read.csv(paste0(results_folder, '/scoresCombatDup4.csv'))
+scoresCombatOrigDup4 <- read.csv(paste0(results_folder, '/scoresCombatOrigDup4.csv'))
+
 scoresOrigIntDup <- read.csv(paste0(results_folder, '/scoresTwoThousandOrigIntDup.csv'))
 
 scoresDataTypes <- read.csv(paste0(results_folder, '/scoresDataTypes.csv'))
@@ -42,8 +51,12 @@ scoresOrigCombatDataTypes <- read.csv(paste0(results_folder, '/scoresOrigCombatD
 
 ###################################################################################################
 # Get method types
-scoresNormal$method <- interaction(scoresNormal$cluster,
+scoresNormal$method <- interaction(scoresNormalClust$cluster,
+                                   scoresNormalClust$impute, drop = TRUE)
+
+scoresNormalClust$method <- interaction(scoresNormal$cluster,
                                    scoresNormal$impute, drop = TRUE)
+
 
 scoresNormal1000$method <- interaction(scoresNormal1000$cluster,
                                    scoresNormal1000$impute, drop = TRUE)
@@ -63,12 +76,26 @@ scoresCombatDup$method <- interaction(scoresCombatDup$cluster,
 scoresCombatOrigDup$method <- interaction(scoresCombatOrigDup$cluster,
                                       scoresCombatOrigDup$impute, drop = TRUE)
 
+scoresCombatDup3$method <- interaction(scoresCombatDup3$cluster,
+                                      scoresCombatDup3$impute, drop = TRUE)
+
+scoresCombatOrigDup3$method <- interaction(scoresCombatOrigDup3$cluster,
+                                          scoresCombatOrigDup3$impute, drop = TRUE)
+
+scoresCombatDup4$method <- interaction(scoresCombatDup4$cluster,
+                                       scoresCombatDup4$impute, drop = TRUE)
+
+scoresCombatOrigDup4$method <- interaction(scoresCombatOrigDup4$cluster,
+                                           scoresCombatOrigDup4$impute, drop = TRUE)
 
 scoresNormalOrig$method <- interaction(scoresNormalOrig$cluster,
                                        scoresNormalOrig$impute, drop = TRUE)
 
 scoresNormalOrigDup$method <- interaction(scoresNormalOrigDup$cluster,
                                           scoresNormalOrigDup$impute, drop = TRUE)
+
+scoresNormalOrigDupClust$method <- interaction(scoresNormalOrigDupClust$cluster,
+                                          scoresNormalOrigDupClust$impute, drop = TRUE)
 
 scoresNormalOrigDup1000$method <- interaction(scoresNormalOrigDup1000$cluster,
                                               scoresNormalOrigDup1000$impute, drop = TRUE)
@@ -448,6 +475,10 @@ groupbyCancer(cancer = 1, scoresNormal, acc_nmi = TRUE, title = 'Intersection BR
 groupbyCancer(cancer = 1, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA')
 groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup')
 
+groupbyCancer(cancer = 1, scoresNormalClust, normal = TRUE, title = 'Intersection BRCA')
+groupbyCancer(cancer = 1, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection BRCA')
+groupbyCancer(cancer = 1, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup')
+
 
 groupbyCancer(cancer = 1, scoresNormal1000, normal = TRUE, title = 'Intersection BRCA')
 groupbyCancer(cancer = 1, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup 1000')
@@ -466,6 +497,11 @@ groupbyCancer(cancer = 2, scoresNormal, acc_nmi = TRUE, title = 'Intersection KI
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union kirc')
 groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
 
+groupbyCancer(cancer = 2, scoresNormalClust, normal = TRUE, title = 'Intersection KIRC')
+groupbyCancer(cancer = 2, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection KIRC')
+
+groupbyCancer(cancer = 2, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
+
 groupbyCancer(cancer = 2, scoresNormal1000, normal = TRUE, title = 'Intersection KIRC')
 groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 1000')
 
@@ -475,6 +511,12 @@ groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, tit
 groupbyMethod(scoresCombat, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatDup, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatOrigDup, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed')
+
+groupbyMethod(scoresCombatDup3, normal = TRUE, title = 'Combat intersection 3 clusters')
+groupbyMethod(scoresCombatOrigDup3, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed 3 clusters')
+
+groupbyMethod(scoresCombatDup4, normal = TRUE, title = 'Combat intersection 4 clusters')
+groupbyMethod(scoresCombatOrigDup4, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed 4 clusters')
 
 groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'KIRC (Combat) Intersection of Union')
 groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'KIRC (Combat) Intersection of Union')
@@ -487,6 +529,10 @@ groupbyCancer(cancer = 3, scoresNormal, acc_nmi = TRUE, title = 'Intersection li
 groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
 
+groupbyCancer(cancer = 3, scoresNormalClust, normal = TRUE, title = 'Intersection lihc')
+groupbyCancer(cancer = 3, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection lihc')
+
+groupbyCancer(cancer = 3, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
 
 groupbyCancer(cancer = 3, scoresNormal1000, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 1000')

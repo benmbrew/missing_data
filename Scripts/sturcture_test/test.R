@@ -547,7 +547,3 @@ summary(glm(methyl_missing ~ vital_status + survTime, data=lusc_clin, family=bin
 summary(glm(mirna_missing ~ vital_status + survTime, data=lusc_clin, family=binomial))
 summary(glm(mrna_missing ~ vital_status + survTime, data=lusc_clin, family=binomial))
 
-
-#############################################################################################################
-# 4) MissMech (https://cran.r-project.org/web/packages/MissMech/MissMech.pdf)
-
