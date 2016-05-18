@@ -15,7 +15,7 @@ source(paste0(results_folder, '/Lib/helpers.R'))
 
 # Load data
 scoresNormal <- read.csv(paste0(results_folder, '/scoresTwoThousand.csv'))
-scoresNormalClust <- read.csv(paste0(results_folder, '/scoresTwoThousandClust.csv'))
+scoresNormalClust <- read.csv(paste0(results_folder, '/scoresTwoThousandDupClust.csv'))
 scoresNormal1000 <- read.csv(paste0(results_folder, '/scoresTwoThousandDup1000.csv'))
 scoresNormal3000 <- read.csv(paste0(results_folder, '/scoresTwoThousandDup3000.csv'))
 
@@ -51,11 +51,11 @@ scoresOrigCombatDataTypes <- read.csv(paste0(results_folder, '/scoresOrigCombatD
 
 ###################################################################################################
 # Get method types
-scoresNormal$method <- interaction(scoresNormalClust$cluster,
-                                   scoresNormalClust$impute, drop = TRUE)
-
-scoresNormalClust$method <- interaction(scoresNormal$cluster,
+scoresNormal$method <- interaction(scoresNormal$cluster,
                                    scoresNormal$impute, drop = TRUE)
+
+scoresNormalClust$method <- interaction(scoresNormalClust$cluster,
+                                   scoresNormalClust$impute, drop = TRUE)
 
 
 scoresNormal1000$method <- interaction(scoresNormal1000$cluster,
@@ -154,6 +154,7 @@ scoresOrigCombatDataTypes <- scoresOrigCombatDataTypes[complete.cases(scoresOrig
 groupbyMethod <- function(data, orig = FALSE, 
                           normal = FALSE,
                           pval = FALSE, 
+                          nopval = FALSE,
                           pvalcox = FALSE, 
                           con_index_p = FALSE, 
                           con_index_ci = FALSE, 
@@ -172,6 +173,15 @@ groupbyMethod <- function(data, orig = FALSE,
     temp_melt <- melt(temp, id.vars = c('method'))
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+    } else if (orig & nopval) {
+    
+    temp <- data %>%
+      group_by(method) %>%
+      summarise(meanCi = mean(ci, na.rm = T))
+    
+    ggplot(data = temp, aes(reorder(method, -meanCi), meanCi)) + geom_bar(stat = 'identity') +
+      xlab('Method') + ylab('Ci') + ggtitle(title) + theme_538_bar
   
     } else if (orig & int) {
     
@@ -276,6 +286,9 @@ groupbyMethod(scoresNormal, normal = TRUE, title = 'Intersection All Cancers')
 groupbyMethod(scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers')
 groupbyMethod(scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup')
 
+groupbyMethod(scoresNormalClust, normal = TRUE, title = 'Intersection All Cancers')
+groupbyMethod(scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers')
+
 groupbyMethod(scoresNormal1000, normal = TRUE, title = 'Intersection All Cancers 1000')
 groupbyMethod(scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union All Cancers Dup 1000')
 
@@ -297,6 +310,7 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
                           int = FALSE,
                           nmi = FALSE, 
                           acc = FALSE,
+                          nopval = FALSE,
                           acc_nmi = FALSE,
                           title) {
   
@@ -312,6 +326,15 @@ groupbyCancer <- function(cancer, data, orig = FALSE,
     temp_melt <- melt(temp, id.vars = c('method'))
     ggplot(data = temp_melt, aes(reorder(method, -value), value, fill = variable)) + geom_bar(stat = 'identity') +
       xlab('Method') + ylab('Mean Score') + ggtitle(title) + theme_538_bar
+    
+    } else if (orig & nopval) {
+      
+      temp <- temp_data %>%
+        group_by(method) %>%
+        summarise(meanCi = mean(ci, na.rm = T))
+      
+      ggplot(data = temp, aes(reorder(method, -meanCi), meanCi)) + geom_bar(stat = 'identity') +
+        xlab('Method') + ylab('Ci') + ggtitle(title) + theme_538_bar
     
     } else if (orig & int) {
     
@@ -477,7 +500,8 @@ groupbyCancer(cancer = 1, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title =
 
 groupbyCancer(cancer = 1, scoresNormalClust, normal = TRUE, title = 'Intersection BRCA')
 groupbyCancer(cancer = 1, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection BRCA')
-groupbyCancer(cancer = 1, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union BRCA Dup')
+groupbyCancer(cancer = 1, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Union BRCA Dup')
+groupbyCancer(cancer = 1, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Union BRCA Dup')
 
 
 groupbyCancer(cancer = 1, scoresNormal1000, normal = TRUE, title = 'Intersection BRCA')
@@ -497,10 +521,13 @@ groupbyCancer(cancer = 2, scoresNormal, acc_nmi = TRUE, title = 'Intersection KI
 groupbyCancer(cancer = 2, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union kirc')
 groupbyCancer(cancer = 2, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
 
+
 groupbyCancer(cancer = 2, scoresNormalClust, normal = TRUE, title = 'Intersection KIRC')
 groupbyCancer(cancer = 2, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection KIRC')
 
 groupbyCancer(cancer = 2, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup')
+groupbyCancer(cancer = 2, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Union KIRC Dup')
+
 
 groupbyCancer(cancer = 2, scoresNormal1000, normal = TRUE, title = 'Intersection KIRC')
 groupbyCancer(cancer = 2, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union kirc Dup 1000')
@@ -511,28 +538,36 @@ groupbyCancer(cancer = 2, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, tit
 groupbyMethod(scoresCombat, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatDup, normal = TRUE, title = 'Combat intersection')
 groupbyMethod(scoresCombatOrigDup, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed')
+groupbyMethod(scoresCombatOrigDup, orig = TRUE, nopval = TRUE, title = 'Combat union duplicate removed')
+
 
 groupbyMethod(scoresCombatDup3, normal = TRUE, title = 'Combat intersection 3 clusters')
 groupbyMethod(scoresCombatOrigDup3, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed 3 clusters')
+groupbyMethod(scoresCombatOrigDup3, orig = TRUE, nopval = TRUE, title = 'Combat union duplicate removed 3 clusters')
 
 groupbyMethod(scoresCombatDup4, normal = TRUE, title = 'Combat intersection 4 clusters')
 groupbyMethod(scoresCombatOrigDup4, orig = TRUE, pval = TRUE, title = 'Combat union duplicate removed 4 clusters')
+groupbyMethod(scoresCombatOrigDup4, orig = TRUE, nopval = TRUE, title = 'Combat union duplicate removed 4 clusters')
 
 groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'KIRC (Combat) Intersection of Union')
 groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'KIRC (Combat) Intersection of Union')
 groupbyCancer(cancer = 2, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'KIRC (Combat) Intersection of Union')
 
+
 ## lihc
 groupbyCancer(cancer = 3, scoresNormal, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormal, acc_nmi = TRUE, title = 'Intersection lihc')
-
-groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
-groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
-
 groupbyCancer(cancer = 3, scoresNormalClust, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection lihc')
 
+
+groupbyCancer(cancer = 3, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union lihc')
+groupbyCancer(cancer = 3, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
 groupbyCancer(cancer = 3, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
+groupbyCancer(cancer = 3, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Pval Union lihc Dup')
+
+groupbyCancer(cancer = 3, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup')
+groupbyCancer(cancer = 3, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Pval Union lihc Dup')
 
 groupbyCancer(cancer = 3, scoresNormal1000, normal = TRUE, title = 'Intersection lihc')
 groupbyCancer(cancer = 3, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union lihc Dup 1000')
@@ -547,10 +582,14 @@ groupbyCancer(cancer = 3, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LI
 ## luad
 groupbyCancer(cancer = 4, scoresNormal, normal = TRUE, title = 'Intersection luad')
 groupbyCancer(cancer = 4, scoresNormal, acc_nmi = TRUE, title = 'Intersection luad')
+groupbyCancer(cancer = 4, scoresNormalClust, normal = TRUE, title = 'Intersection luad')
+groupbyCancer(cancer = 4, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection luad')
 
 groupbyCancer(cancer = 4, scoresNormalOrig, orig = TRUE, pval = TRUE, title = 'Pval Union luad')
 groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, pval = TRUE, title = 'Pval Union luad Dup')
-
+groupbyCancer(cancer = 4, scoresNormalOrigDup, orig = TRUE, nopval = TRUE, title = 'Pval Union luad Dup')
+groupbyCancer(cancer = 4, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union luad Dup')
+groupbyCancer(cancer = 4, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Pval Union luad Dup')
 
 groupbyCancer(cancer = 4, scoresNormal1000, normal = TRUE, title = 'Intersection luad')
 groupbyCancer(cancer = 4, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union luad Dup 1000')
@@ -562,12 +601,32 @@ groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'LU
 groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'LUAD Intersection of Union')
 groupbyCancer(cancer = 4, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'LUAD Intersection of Union')
 
+
+## lusc
+
+groupbyCancer(cancer = 5, scoresNormalClust, normal = TRUE, title = 'Intersection lusc')
+groupbyCancer(cancer = 5, scoresNormalClust, acc_nmi = TRUE, title = 'Intersection lusc')
+
+groupbyCancer(cancer = 5, scoresNormalOrigDupClust, orig = TRUE, pval = TRUE, title = 'Pval Union lusc Dup')
+groupbyCancer(cancer = 5, scoresNormalOrigDupClust, orig = TRUE, nopval = TRUE, title = 'Pval Union lusc Dup')
+
+groupbyCancer(cancer = 5, scoresNormal1000, normal = TRUE, title = 'Intersection lusc')
+groupbyCancer(cancer = 5, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union lusc Dup 1000')
+
+groupbyCancer(cancer = 5, scoresNormal3000, normal = TRUE, title = 'Intersection lusc')
+groupbyCancer(cancer = 5, scoresNormalOrigDup3000, orig = TRUE, pval = TRUE, title = 'Pval Union lusc Dup 3000')
+
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, int = TRUE, title = 'lusc Intersection of Union')
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, acc = TRUE, title = 'lusc Intersection of Union')
+groupbyCancer(cancer = 5, scoresOrigIntDup, orig = TRUE, nmi = TRUE, title = 'lusc Intersection of Union')
+
+
 # LUSC
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, normal = TRUE, pval = TRUE, title = 'Intersection LUSC')
 groupbyCancer(cancer = 5, scoresLUSCNormalDup, acc_nmi = TRUE, pval = TRUE, title = 'Intersection LUSC')
 
-
 groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, pval = TRUE, title = 'Union LUSC duplicates removed')
+groupbyCancer(cancer = 5, scoresLUSCOrigDup, orig = TRUE, nopval = TRUE, title = 'Union LUSC duplicates removed')
 
 groupbyCancer(cancer = 5, scoresNormal1000, normal = TRUE, title = 'Intersection lusc')
 groupbyCancer(cancer = 5, scoresNormalOrigDup1000, orig = TRUE, pval = TRUE, title = 'Pval Union lusc Dup 1000')

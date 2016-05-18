@@ -31,29 +31,37 @@ transposeDataFrame <- function(df, colnamesInd=1) {
   df
 }
 
-# 
-# extractRelevantColumns <- function(data) {
-#   # List of features used for survival analysis
-#   features <- c("admin.batch_number",
-#                 "patient.bcr_patient_barcode",
-#                 "patient.bcr_patient_uuid",
-#                 "patient.days_to_death",
-#                 "patient.days_to_last_followup",
-#                 "patient.days_to_last_known_alive",
-#                 "patient.vital_status",
-#                 "patient.gender")
-#   patientFeatures <- paste("patient", features, sep=".")
-#   
-#   # Add missing features to the data
-#   missingFeaturesInd <- !(features %in% colnames(data))
-#   data[features[missingFeaturesInd]] <- NA
-#   
-#   # Extract and rename the relevant columns
-#   data <- data[features]
-#   colnames(data) <- features
-#   
-#   return(data)
-# }
+
+extractRelevantColumns <- function(data) {
+  # List of features used for survival analysis
+  features <- c("admin.batch_number",
+                "patient.bcr_patient_barcode",
+                "patient.bcr_patient_uuid",
+                "patient.days_to_death",
+                "patient.days_to_last_followup",
+                "patient.days_to_last_known_alive",
+                "patient.vital_status",
+                "patient.age_at_initial_pathologic_diagnosis",
+                "patient.days_to_birth",
+                "patient.number_pack_years_smoked",
+                "patient.gender",
+                "patient.white_cell_count_result",
+                "patient.tobacco_smoking_history",
+                "patient.year_of_tobacco_smoking_onset",
+                "patient.race",
+                "patient.number_of_lymphnodes_positive")
+  patientFeatures <- paste("patient", features, sep=".")
+
+  # Add missing features to the data
+  missingFeaturesInd <- !(features %in% colnames(data))
+  data[features[missingFeaturesInd]] <- NA
+
+  # Extract and rename the relevant columns
+  data <- data[features]
+  colnames(data) <- features
+
+  return(data)
+}
 
 
 loadClinData <- function(cancer) {
@@ -79,7 +87,7 @@ loadClinData <- function(cancer) {
 clinicalDataBRCA <- loadClinData(cancer = 'BRCA')
 # clinicalDataBRCA <- extractRelevantColumns(clinicalDataBRCA)
 clinicalDataKIRC <- loadClinData(cancer = 'KIRC')
-# clinicalDataKIRC <- extractRelevantColumns(clinicalDataKIRC)
+clinicalDataKIRC <- extractRelevantColumns(clinicalDataKIRC)
 clinicalDataLIHC <- loadClinData(cancer = 'LIHC')
 # clinicalDataLIHC <- extractRelevantColumns(clinicalDataLIHC)
 clinicalDataLUAD <- loadClinData(cancer = 'LUAD')
