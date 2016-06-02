@@ -283,6 +283,40 @@ lihc_ids <-loadIDs(cancer = 'LIHC')
 luad_ids <-loadIDs(cancer = 'LUAD')
 lusc_ids <-loadIDs(cancer = 'LUSC')
 
+##########################################################################################################
+# Combat, compare clusters from complete, compete imputed, and union
+
+# Get labels for each clustering type, from the intersection for combat
+combat_com5_hier <- as.factor(t(read.table(paste0(completeFolder, '/1_1.txt'))))
+combat_com5_iclust <- as.factor(t(read.table(paste0(completeFolder, '/1_2.txt'))))
+combat_com5_snf <- as.factor(t(read.table(paste0(completeFolder, '/1_3.txt'))))
+
+combat_com4_hier <- as.factor(t(read.table(paste0(completeFolder, '/2_1.txt'))))
+combat_com4_iclust <- as.factor(t(read.table(paste0(completeFolder, '/2_2.txt'))))
+combat_com4_snf <- as.factor(t(read.table(paste0(completeFolder, '/2_3.txt'))))
+
+combat_com3_hier <- as.factor(t(read.table(paste0(completeFolder, '/3_1.txt'))))
+combat_com3_iclust <- as.factor(t(read.table(paste0(completeFolder, '/3_2.txt'))))
+combat_com3_snf <- as.factor(t(read.table(paste0(completeFolder, '/3_3.txt'))))
+
+# get summary of combat 
+summary(combat_com5_hier)
+summary(combat_com5_iclust)
+summary(combat_com5_snf)
+
+summary(combat_com4_hier)
+summary(combat_com4_iclust)
+summary(combat_com4_snf)
+
+summary(combat_com3_hier)
+summary(combat_com3_iclust)
+summary(combat_com3_snf)
+
+
+
+
+
+
 
 ##########################################################################################################
 # BRCA, compare clusters from complete, compete imputed, and union
