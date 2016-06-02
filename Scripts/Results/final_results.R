@@ -7,6 +7,7 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 library(tidyr)
+library(RColorBrewer)
 ################################################################################################
 # Initialize folders, 
 home_folder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
@@ -101,7 +102,22 @@ top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
 
 # plot 
 ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity') + theme_538_bar
+  geom_bar(stat = 'identity')  +  xlab('Method') + ylab('') + 
+  scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="Method Ranking",
+                              breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
+                               labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
+  theme(panel.background=element_rect(fill="white"), 
+        plot.background=element_rect(fill="#F0F0F0"), 
+        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        legend.position="right", #legend.title = element_blank(), 
+        legend.background = element_rect(fill="#F0F0F0"),
+        plot.title=element_text(face="bold",hjust=-.08,vjust=2,colour="#535353",size=10),
+        axis.text.x=element_text(size=11,colour="#535353",face="bold", angle = 45, hjust = 1),
+        axis.text.y=element_text(size=11,colour="#535353",face="bold"),
+        axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
+        axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+
 
 # group by method, get top 1, top 3, top 5
 top_union_acc <- union_results %>%
@@ -128,7 +144,21 @@ top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
 
 # plot 
 ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity') + theme_538_bar
+  geom_bar(stat = 'identity')  +  xlab('Method') + ylab('') + 
+  scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="Method Ranking",
+                    breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
+                    labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
+  theme(panel.background=element_rect(fill="white"), 
+        plot.background=element_rect(fill="#F0F0F0"), 
+        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        legend.position="right", #legend.title = element_blank(), 
+        legend.background = element_rect(fill="#F0F0F0"),
+        plot.title=element_text(face="bold",hjust=-.08,vjust=2,colour="#535353",size=10),
+        axis.text.x=element_text(size=11,colour="#535353",face="bold", angle = 45, hjust = 1),
+        axis.text.y=element_text(size=11,colour="#535353",face="bold"),
+        axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
+        axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
 
 # group by method, get top 1, top 3, top 5
 top_union <- union_results %>%
@@ -144,7 +174,21 @@ top_union_melt <- melt(top_union, id.vars = 'method')
 
 # plot 
 ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity') + theme_538_bar
+  geom_bar(stat = 'identity')  +  xlab('Method') + ylab('') + 
+  scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="Method Ranking",
+                    breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
+                    labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
+  theme(panel.background=element_rect(fill="white"), 
+        plot.background=element_rect(fill="#F0F0F0"), 
+        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        legend.position="right", #legend.title = element_blank(), 
+        legend.background = element_rect(fill="#F0F0F0"),
+        plot.title=element_text(face="bold",hjust=-.08,vjust=2,colour="#535353",size=10),
+        axis.text.x=element_text(size=11,colour="#535353",face="bold", angle = 45, hjust = 1),
+        axis.text.y=element_text(size=11,colour="#535353",face="bold"),
+        axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
+        axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
 
 
 
