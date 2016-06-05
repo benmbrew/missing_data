@@ -111,14 +111,15 @@ top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
 
 # plot 
 ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity', alpha = 0.7)  +  xlab('Method') + ylab('') + 
+  geom_bar(stat = 'identity', alpha = 0.8)  +  xlab('Method') + ylab('') + 
   ggtitle('Intersection') +
   scale_fill_manual(values = c("grey10", "grey50", "grey90"), name="ACC and NMI Ranking",
                               breaks=c("top1_acc_nmi", "top3_acc_nmi", "top5_acc_nmi"),
                                labels=c("Rank 1", "Top 3", "Top 5")) + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -126,7 +127,7 @@ ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = varia
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)
 
 ############################################################################################################
 # group by method, get top 1, top 3, top 5 for pval
@@ -147,8 +148,9 @@ ggplot(data = top_int_pval_melt, aes(reorder(method, -value), value, fill = vari
                     breaks=c("top1_acc_nmi", "top3_acc_nmi", "top5_acc_nmi"),
                     labels=c("Rank 1", "Top 3", "Top 5")) + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -156,8 +158,7 @@ ggplot(data = top_int_pval_melt, aes(reorder(method, -value), value, fill = vari
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
-
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)
 #############################################################################################################
 # group by method, get top 1, top 3, top 5 for pval
 top_union <- union_results %>%
@@ -177,8 +178,9 @@ ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variabl
                     breaks=c("top1_pval", "top3_pval", "top5_pval"),
                     labels=c("Rank 1", "Top 3", "Top 5")) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -186,7 +188,7 @@ ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variabl
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0) 
 
 #########################################################################################################
 # group by method, get top 1, top 3, top 5 acc_nmi
@@ -203,14 +205,15 @@ top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
 
 # plot 
 ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity', alpha = 0.7)  +  xlab('Method') + ylab('') + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
+  geom_bar(stat = 'identity', alpha = 0.9)  +  xlab('Method') + ylab('') + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
   ggtitle('Intersection') +
   scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="ACC and NMI Ranking",
                     breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
-                    labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
+                    labels=c("Top Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -218,7 +221,7 @@ ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = varia
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)
 
 ###########################################################################################################
 # group by method, get top 1, top 3, top 5 pval
@@ -235,14 +238,15 @@ top_int_pval_melt <- melt(top_int_pval, id.vars = 'method')
 
 # plot 
 ggplot(data = top_int_pval_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity', alpha = 0.7)  +  xlab('Method') + ylab('') + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
+  geom_bar(stat = 'identity', alpha = 0.9)  +  xlab('Method') + ylab('') + scale_y_continuous(breaks=c(2,4,6,8,10,12)) +
   ggtitle('Intersection') +
   scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="Pval and CI Ranking",
                     breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
                     labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -250,7 +254,7 @@ ggplot(data = top_int_pval_melt, aes(reorder(method, -value), value, fill = vari
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0) 
 
 #######################################################################################################
 # group by method, get top 1, top 3, top 5 for pval 
@@ -267,14 +271,15 @@ top_union_melt <- melt(top_union, id.vars = 'method')
 
 # plot 
 ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variable)) +
-  geom_bar(stat = 'identity', alpha = 0.7)  +  xlab('Method') + ylab('') + 
+  geom_bar(stat = 'identity', alpha = 0.9)  +  xlab('Method') + ylab('') + 
   ggtitle('Union') +
   scale_fill_manual(values = c("grey10", "grey30", "grey50", "grey70", "grey90"), name="Pval and CI Ranking",
                     breaks=c("top20", "top20_40", "top40_60", "top60_80", "top80_100" ),
                     labels=c("1st Quintile", "2nd Quintile", "3rd Quintile", "4th Quintile", "5th Quintile")) +
   theme(panel.background=element_rect(fill="white"), 
-        plot.background=element_rect(fill="#F0F0F0"), 
-        panel.grid.major=element_line(colour="#F0F0F0",size=.75), axis.ticks=element_blank(),
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
         legend.position="right", #legend.title = element_blank(), 
         legend.background = element_rect(fill="#F0F0F0"),
         plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
@@ -282,5 +287,4 @@ ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variabl
         axis.text.y=element_text(size=11,colour="#535353",face="bold"),
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
-
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)

@@ -1,5 +1,5 @@
 ################################################################################################
-# This script will create box plots for imputation nrmse
+# This script will create box plots for imputation nrmse with LLS
 
 # iniiate folders
 ################################################################################################
@@ -32,11 +32,11 @@ impute <- read.table(paste0(results_folder, '/imputation.txt'))
 
 # Load the imputation results
 names(impute) <- c("cancer", "impute", "seed", "methyl", "mirna", "mrna",
-                "runtime")
+                   "runtime")
 
 #########################################################################
 ### Create box plot for each method data type 
-  
+
 # name variables 
 impute$cancer <- cancerTypes[impute$cancer]
 impute$impute <- imputeTypes[impute$impute]
@@ -46,12 +46,11 @@ impute$impute <- imputeTypes[impute$impute]
 
 # get rid of runtime
 impute$runtime <- NULL
-impute <- impute[which(impute$impute != 'LLS'),]
 
 # melt data frame to there is variable that has all data types in grouped form
 impute <- melt(impute, id.vars = c('cancer', 'impute', 'seed'), 
-             variable.name = 'data_type', 
-             value.name = 'nrmse')
+               variable.name = 'data_type', 
+               value.name = 'nrmse')
 
 # split into cancers 
 impute_brca <- impute[impute$cancer == 'BRCA',]
@@ -76,7 +75,9 @@ data_labeller <- function(variable,value){
 
 # BRCA
 ggplot(impute_brca, aes(impute, nrmse)) + 
-  geom_boxplot(fill = 'grey50') + facet_wrap(~data_type, labeller = data_labeller) + 
+  geom_boxplot(fill = 'grey50') + geom_boxplot(outlier.colour=NA) + 
+  coord_cartesian(ylim = c(0, 4)) +
+  facet_wrap(~data_type, labeller = data_labeller) + 
   theme(strip.text.x = element_text(size = 15, colour = "grey30", angle = 0, face = 'bold')) + 
   xlab('Imputation Method') + ylab('nmrse') + ggtitle('BRCA Imputation Scores') +
   theme(panel.background=element_rect(fill="white"), 
@@ -94,7 +95,9 @@ ggplot(impute_brca, aes(impute, nrmse)) +
 
 # KIRC
 ggplot(impute_kirc, aes(impute, nrmse)) + 
-  geom_boxplot(fill = 'grey50') + facet_wrap(~data_type, labeller = data_labeller) + 
+  geom_boxplot(fill = 'grey50') + geom_boxplot(outlier.colour=NA) + 
+  coord_cartesian(ylim = c(0, 4)) +
+  facet_wrap(~data_type, labeller = data_labeller) + 
   theme(strip.text.x = element_text(size = 15, colour = "grey30", angle = 0, face = 'bold')) + 
   xlab('Imputation Method') + ylab('nmrse') + ggtitle('KIRC Imputation Scores') +
   theme(panel.background=element_rect(fill="white"), 
@@ -112,7 +115,9 @@ ggplot(impute_kirc, aes(impute, nrmse)) +
 
 # LIHC
 ggplot(impute_lihc, aes(impute, nrmse)) + 
-  geom_boxplot(fill = 'grey50') + facet_wrap(~data_type, labeller = data_labeller) + 
+  geom_boxplot(fill = 'grey50') + geom_boxplot(outlier.colour=NA) + 
+  coord_cartesian(ylim = c(0, 4)) +
+  facet_wrap(~data_type, labeller = data_labeller) + 
   theme(strip.text.x = element_text(size = 15, colour = "grey30", angle = 0, face = 'bold')) + 
   xlab('Imputation Method') + ylab('nmrse') + ggtitle('LIHC Imputation Scores') +
   theme(panel.background=element_rect(fill="white"), 
@@ -126,11 +131,13 @@ ggplot(impute_lihc, aes(impute, nrmse)) +
         axis.text.y=element_text(size=15,colour="#535353",face="bold"),
         axis.title.y=element_text(size=15,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=15,colour="#535353",face="bold",vjust=-.5),
-        plot.margin = unit(c(1, 1, .5, .7), "cm")) 
+        plot.margin = unit(c(1, 1, .5, .7), "cm"))
 
 # LUAD
 ggplot(impute_luad, aes(impute, nrmse)) + 
-  geom_boxplot(fill = 'grey50') + facet_wrap(~data_type, labeller = data_labeller) + 
+  geom_boxplot(fill = 'grey50') + geom_boxplot(outlier.colour=NA) + 
+  coord_cartesian(ylim = c(0, 4)) +
+  facet_wrap(~data_type, labeller = data_labeller) + 
   theme(strip.text.x = element_text(size = 15, colour = "grey30", angle = 0, face = 'bold')) + 
   xlab('Imputation Method') + ylab('nmrse') + ggtitle('LUAD Imputation Scores') +
   theme(panel.background=element_rect(fill="white"), 
@@ -148,7 +155,9 @@ ggplot(impute_luad, aes(impute, nrmse)) +
 
 # LUSC
 ggplot(impute_lusc, aes(impute, nrmse)) + 
-  geom_boxplot(fill = 'grey50') + facet_wrap(~data_type, labeller = data_labeller) + 
+  geom_boxplot(fill = 'grey50') + geom_boxplot(outlier.colour=NA) + 
+  coord_cartesian(ylim = c(0, 4)) +
+  facet_wrap(~data_type, labeller = data_labeller) + 
   theme(strip.text.x = element_text(size = 15, colour = "grey30", angle = 0, face = 'bold')) + 
   xlab('Imputation Method') + ylab('nmrse') + ggtitle('LUSC Imputation Scores') +
   theme(panel.background=element_rect(fill="white"), 
