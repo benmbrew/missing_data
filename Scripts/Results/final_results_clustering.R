@@ -36,6 +36,7 @@ union_results$clusters <- NULL
 
 # create a variable for imputation and cluster
 createColumn <- 
+  
   function(data, impute) {
   
   temp <- strsplit(as.character(data$method), '.', fixed = TRUE)
@@ -288,3 +289,4 @@ ggplot(data = top_union_melt, aes(reorder(method, -value), value, fill = variabl
         axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
         axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
         plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)
+
