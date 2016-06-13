@@ -15,15 +15,13 @@ source(paste0(results_folder, '/Lib/helpers.R'))
 
 
 # Load data
-testScores <- read.csv(paste0(results_folder, '/testScores.csv'))
-testScoresOrig <- read.csv(paste0(results_folder, '/testScoresOrig.csv'))
+testScores <- read.csv(paste0(results_folder, '/testScoresAllInt.csv'))
+testScoresOrig <- read.csv(paste0(results_folder, '/testScoresAllUnion.csv'))
 
 # remove unneeded columns
 testScoresOrig$acc <- NULL
 testScoresOrig$nmi <- NULL
-testScoresOrig$clusters <- NULL
-testScores$union_rank <- NULL
-testScores$cluster <- NULL
+testScoresOrig$X <- NULL
 
 # add acc and nmi, pval and ci
 testScores$acc_nmi <- testScores$acc + testScores$nmi
@@ -32,6 +30,12 @@ testScores$total <- testScores$acc_nmi + testScores$pval_ci
 
 testScoresOrig$total <- testScoresOrig$pval + testScoresOrig$ci
 
+
+# create cancer, data type column
+testScores$cancer_data <- paste0(testScores$cancer, '_', testScores$type)
+testScoresOrig$cancer_data <- paste0(testScoresOrig$cancer, '_', testScoresOrig$type)
+
+
 # get ranking for each method
 rankMethods <- function(data, complete) {
   
@@ -39,27 +43,27 @@ rankMethods <- function(data, complete) {
     
     data <- transform(data, 
                       acc_nmi_rank = ave(acc_nmi, 
-                                         cancer, 
+                                         cancer_data, 
                                          FUN = function(x) rank(-x, ties.method = "min")),
                       pval_ci_rank = ave(pval_ci, 
-                                         cancer, 
+                                         cancer_data, 
                                          FUN = function(x) rank(-x, ties.method = "min")),
                       total_rank_int = ave(total, 
-                                       cancer, 
-                                       FUN = function(x) rank(-x, ties.method = "min")),
+                                           cancer_data, 
+                                           FUN = function(x) rank(-x, ties.method = "min")),
                       pval_rank = ave(pval, 
-                                       cancer, 
-                                       FUN = function(x) rank(-x, ties.method = "min")))
+                                      cancer_data, 
+                                      FUN = function(x) rank(-x, ties.method = "min")))
     
   } else {
     
     data <- transform(data, 
                       total_rank_union = ave(total, 
-                                       cancer, 
-                                       FUN = function(x) rank(-x, ties.method = "min")),
+                                             cancer_data, 
+                                             FUN = function(x) rank(-x, ties.method = "min")),
                       pval_rank_union = ave(pval, 
-                                      cancer, 
-                                      FUN = function(x) rank(-x, ties.method = "min")))
+                                            cancer_data, 
+                                            FUN = function(x) rank(-x, ties.method = "min")))
   }
   
   return(data)
@@ -87,24 +91,25 @@ rm(testScores, testScoresOrig)
 ## Create data frame that has counts for number of time method is in same quintile in intersection and union 
 
 # first paste cancer and method together 
-int_rank$cancer_method <- paste0(int_rank$cancer,'_', int_rank$method)
-union_rank$cancer_method <- paste0(union_rank$cancer,'_', union_rank$method)
+int_rank$cancer_method_data <- paste0(int_rank$cancer_data,'_', int_rank$method)
+union_rank$cancer_method_data <- paste0(union_rank$cancer_data,'_', union_rank$method)
 
 # left join on cancer_method 
 dat <- left_join(int_rank, 
                  union_rank, 
-                 by = 'cancer_method')
+                 by = 'cancer_method_data')
 
 # remove unnecessary columns 
-dat <- dat[, c('cancer.x', 
-               'cancer_method',
+dat <- dat[, c('cancer_method_data',
+               'cancer.x',
+               'method.x',
+               'type.x',
                'pval_rank',
                'pval_rank_union',
                'pval_ci_rank', 
                'acc_nmi_rank', 
                'total_rank_int', 
                'total_rank_union')]
-
 #############################################################################################
 ## check if method is in within 1 place (up or down) in both int and union 
 
@@ -165,7 +170,7 @@ for (i in 1:nrow(dat)) {
     dat$total_pval[i] <- TRUE
     
   } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 1 ||
-    abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 2) {
+             abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 2) {
     dat$total_pval[i] <- TRUE
     
   } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) > 2) {
@@ -174,14 +179,30 @@ for (i in 1:nrow(dat)) {
   
 }
 
-
 ###############################################################################################
-# group by cancer 
-dat_counts <- dat %>% group_by(cancer.x) %>% summarise(total = sum(total == TRUE),
+# group by cancer_method_data 
+dat_counts_all <- dat %>% group_by(cancer_method_data) %>% summarise(total = sum(total == TRUE),
                                                        total_acc_nmi = sum(total_acc_nmi == TRUE),
                                                        total_pval_ci = sum(total_pval_ci == TRUE),
                                                        total_pval = sum(total_pval == TRUE))
 
+# group by cancer 
+dat_counts_cancer <- dat %>% group_by(cancer.x) %>% summarise(total = sum(total == TRUE),
+                                                                      total_acc_nmi = sum(total_acc_nmi == TRUE),
+                                                                      total_pval_ci = sum(total_pval_ci == TRUE),
+                                                                      total_pval = sum(total_pval == TRUE))
+
+# group by data type 
+dat_counts_data <- dat %>% group_by(type.x) %>% summarise(total = sum(total == TRUE),
+                                                                 total_acc_nmi = sum(total_acc_nmi == TRUE),
+                                                                 total_pval_ci = sum(total_pval_ci == TRUE),
+                                                                 total_pval = sum(total_pval == TRUE))
+
+# group by method 
+dat_counts_method <- dat %>% group_by(method.x) %>% summarise(total = sum(total == TRUE),
+                                                                      total_acc_nmi = sum(total_acc_nmi == TRUE),
+                                                                      total_pval_ci = sum(total_pval_ci == TRUE),
+                                                                      total_pval = sum(total_pval == TRUE))
 
 
 ##############################################################################################
@@ -194,11 +215,10 @@ for (i in 1:nrow(dat)) {
   if (dat$acc_nmi_rank[i] == dat$pval_ci_rank[i]) {
     dat$acc_pval[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) == 2 ||
-             abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) == 1) {
+  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) == 1) {
     dat$acc_pval[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) > 2) {
+  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) > 1) {
     dat$acc_pval[i] <- FALSE
   }
   
@@ -206,5 +226,7 @@ for (i in 1:nrow(dat)) {
 
 ###############################################################################################
 # group by cancer 
-dat_counts <- dat %>% group_by(cancer.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
-
+dat_counts_all <- dat %>% group_by(cancer_method_data) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+dat_counts_cancer <- dat %>% group_by(cancer.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+dat_counts_data <- dat %>% group_by(type.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+dat_counts_method <- dat %>% group_by(method.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
