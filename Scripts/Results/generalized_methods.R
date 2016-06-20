@@ -32,6 +32,11 @@ testScores$total <- testScores$acc_nmi + testScores$pval_ci
 
 testScoresOrig$total <- testScoresOrig$pval + testScoresOrig$ci
 
+# subset data to just look at SNF
+testScores <- testScores[grepl('SNF', testScores$method),]
+testScoresOrig <- testScoresOrig[grepl('SNF', testScoresOrig$method),]
+
+
 # get ranking for each method
 rankMethods <- function(data, complete) {
   
@@ -97,6 +102,7 @@ dat <- left_join(int_rank,
 
 # remove unnecessary columns 
 dat <- dat[, c('cancer.x', 
+               'method.x',
                'cancer_method',
                'pval_rank',
                'pval_rank_union',
@@ -115,10 +121,12 @@ for (i in 1:nrow(dat)) {
   if (dat$total_rank_int[i] == dat$total_rank_union[i]) {
     dat$total[i] <- TRUE
     
-  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) == 1 ||
+             abs(dat$total_rank_int[i] - dat$total_rank_union[i]) == 2 ||
+             abs(dat$total_rank_int[i] - dat$total_rank_union[i]) == 3) {
     dat$total[i] <- TRUE
     
-  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) > 3) {
     dat$total[i] <- FALSE
   }
   
@@ -131,10 +139,12 @@ for (i in 1:nrow(dat)) {
   if (dat$acc_nmi_rank[i] == dat$total_rank_union[i]) {
     dat$total_acc_nmi[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) == 1 ||
+             abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) == 2 ||
+             abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) == 3) {
     dat$total_acc_nmi[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) > 3) {
     dat$total_acc_nmi[i] <- FALSE
   }
   
@@ -148,10 +158,12 @@ for (i in 1:nrow(dat)) {
   if (dat$pval_ci_rank[i] == dat$total_rank_union[i]) {
     dat$total_pval_ci[i] <- TRUE
     
-  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) == 1 ||
+             abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) == 2 ||
+             abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) == 3) {
     dat$total_pval_ci[i] <- TRUE
     
-  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) > 3) {
     dat$total_pval_ci[i] <- FALSE
   }
   
@@ -165,23 +177,52 @@ for (i in 1:nrow(dat)) {
     dat$total_pval[i] <- TRUE
     
   } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 1 ||
-    abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 2) {
+             abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 2 ||
+             abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 3) {
     dat$total_pval[i] <- TRUE
     
-  } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) > 2) {
+  } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) > 3) {
     dat$total_pval[i] <- FALSE
   }
   
 }
 
-
 ###############################################################################################
-# group by cancer 
-dat_counts <- dat %>% group_by(cancer.x) %>% summarise(total = sum(total == TRUE),
-                                                       total_acc_nmi = sum(total_acc_nmi == TRUE),
-                                                       total_pval_ci = sum(total_pval_ci == TRUE),
-                                                       total_pval = sum(total_pval == TRUE))
 
+# grab top five for each cancer 
+temp <- arrange(dat, cancer.x, total_rank_int) %>%
+  group_by(cancer.x) %>%
+  summarise(total = sum(total[1:15] == TRUE)) 
+
+# group by cancer 
+dat_count <- dat %>%
+  group_by(cancer.x) %>% 
+  summarise(total = sum(total == TRUE),
+            total_acc_nmi = sum(total_acc_nmi == TRUE),
+            total_pval_ci = sum(total_pval_ci == TRUE),
+            total_pval = sum(total_pval == TRUE))
+
+# group by method 
+dat_count <- dat %>%
+  group_by(method.x) %>% 
+  summarise(total = sum(total == TRUE),
+            total_acc_nmi = sum(total_acc_nmi == TRUE),
+            total_pval_ci = sum(total_pval_ci == TRUE),
+            total_pval = sum(total_pval == TRUE))
+
+
+# group by cluster method
+temp <- strsplit(as.character(dat$method.x), '.', fixed = TRUE)
+temp1 <- do.call('rbind', temp)
+dat$cluster <- as.factor(temp1[,1])
+
+# group by method 
+dat_count <- dat %>%
+  group_by(cluster) %>% 
+  summarise(total = sum(total == TRUE),
+            total_acc_nmi = sum(total_acc_nmi == TRUE),
+            total_pval_ci = sum(total_pval_ci == TRUE),
+            total_pval = sum(total_pval == TRUE))
 
 
 ##############################################################################################
@@ -206,5 +247,17 @@ for (i in 1:nrow(dat)) {
 
 ###############################################################################################
 # group by cancer 
-dat_counts <- dat %>% group_by(cancer.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+dat_counts <- dat %>% 
+  group_by(cancer.x) %>% 
+  summarise(acc_pval = sum(acc_pval == TRUE))
+
+# group by method
+dat_counts <- dat %>% 
+  group_by(method.x) %>% 
+  summarise(acc_pval = sum(acc_pval == TRUE))
+
+# group by cluster_method
+dat_counts <- dat %>% 
+  group_by(cluster) %>% 
+  summarise(acc_pval = sum(acc_pval == TRUE))
 

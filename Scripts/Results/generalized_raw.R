@@ -67,12 +67,60 @@ int$cancer_method <- paste0(int$cancer, '_', int$method)
 # left_join 
 dat <- left_join(int, union, by = 'cancer_method')
 
-temp <- dat %>% 
-  group_by(cancer_method) %>% 
-  summarise(pval_t = t.test(dat$pval_int, 
-                           mu = mean(dat$pval_union), 
-                           alternative = 'two.sided')$p.value < 0.01,
-            ci_t = t.test(dat$ci_int, 
-                            mu = mean(dat$ci_union), 
-                            alternative = 'two.sided')$p.value < 0.01)
+# subset dat 
+dat <- dat[grepl('SNF', dat$method.x),]
+
+###########################################################################################3
+# for pval
+# group by cancer and get avg pval for int and union
+cancer <- dat %>%
+  group_by(cancer.x) %>%
+  summarise(pval_int = mean(pval_int, na.rm = T),
+            pval_union = mean(pval_union, na.rm = T))
+
+cancer$diff <- abs(cancer$pval_int - cancer$pval_union)
+
+# group by method and get avg pval for int and union
+method <- dat %>%
+  group_by(method.x) %>%
+  summarise(pval_int = mean(pval_int, na.rm = T),
+            pval_union = mean(pval_union, na.rm = T))
+
+method$diff <- abs(method$pval_int - method$pval_union)
+
+# group by cancer and method get avg pval for int and union
+cancer_method <- dat %>%
+  group_by(cancer.x, method.x) %>%
+  summarise(pval_int = mean(pval_int, na.rm = T),
+            pval_union = mean(pval_union, na.rm = T))
+
+cancer_method$diff <- abs(cancer_method$pval_int - cancer_method$pval_union)
+
+
+##############################################################################
+# for ci
+
+# group by cancer and get avg ci for int and union
+cancer <- dat %>%
+  group_by(cancer.x) %>%
+  summarise(ci_int = mean(ci_int, na.rm = T),
+            ci_union = mean(ci_union, na.rm = T))
+
+cancer$diff <- abs(cancer$ci_int - cancer$ci_union)
+
+# group by method and get avg ci for int and union
+method <- dat %>%
+  group_by(method.x) %>%
+  summarise(ci_int = mean(ci_int, na.rm = T),
+            ci_union = mean(ci_union, na.rm = T))
+
+method$diff <- abs(method$ci_int - method$ci_union)
+
+# group by cancer and method get avg ci for int and union
+cancer_method <- dat %>%
+  group_by(cancer.x, method.x) %>%
+  summarise(ci_int = mean(ci_int, na.rm = T),
+            ci_union = mean(ci_union, na.rm = T))
+
+cancer_method$diff <- abs(cancer_method$ci_int - cancer_method$ci_union)
 

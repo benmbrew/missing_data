@@ -1,6 +1,8 @@
 ################################################################################################
 # This script will take the results from the intersection and union and create a plot that indicates 
-# the number of times a method is ranked in the same quintile for intersection and
+# the number of times a method is ranked same in int and union. We want to see which cluster sizes 
+# gives bets generalization. 
+
 library(ggplot2)
 library(reshape2)
 library(dplyr)
@@ -15,29 +17,13 @@ source(paste0(results_folder, '/Lib/helpers.R'))
 
 
 # Load data
-testScores <- read.csv(paste0(results_folder, '/testScoresAllInt.csv'))
-testScoresOrig <- read.csv(paste0(results_folder, '/testScoresAllUnion.csv'))
+testScores <- read.csv(paste0(results_folder, '/missing_data_int.csv'))
+testScoresOrig <- read.csv(paste0(results_folder, '/missing_data_union.csv'))
 
 # remove unneeded columns
 testScoresOrig$acc <- NULL
 testScoresOrig$nmi <- NULL
-testScoresOrig$X <- NULL
-
-# add acc and nmi, pval and ci
-testScores$acc_nmi <- testScores$acc + testScores$nmi
-testScores$pval_ci <- testScores$pval + testScores$ci
-testScores$total <- testScores$acc_nmi + testScores$pval_ci
-
-testScoresOrig$total <- testScoresOrig$pval + testScoresOrig$ci
-
-
-# create cancer, data type column
-testScores$cancer_data <- paste0(testScores$cancer, '_', testScores$type)
-testScoresOrig$cancer_data <- paste0(testScoresOrig$cancer, '_', testScoresOrig$type)
-
-# subset data to just look at SNF
-testScores <- testScores[grepl('SNF', testScores$method),]
-testScoresOrig <- testScoresOrig[grepl('SNF', testScoresOrig$method),]
+testScores$X <- NULL
 
 
 # get ranking for each method
@@ -46,27 +32,33 @@ rankMethods <- function(data, complete) {
   if (complete) {
     
     data <- transform(data, 
-                      acc_nmi_rank = ave(acc_nmi, 
-                                         cancer_data, 
+                      acc_nmi_rank_int = ave(acc_nmi, 
+                                         cancer,
+                                         cluster,
                                          FUN = function(x) rank(-x, ties.method = "min")),
-                      pval_ci_rank = ave(pval_ci, 
-                                         cancer_data, 
+                      pval_ci_rank_int = ave(pval_ci, 
+                                         cancer, 
+                                         cluster,
                                          FUN = function(x) rank(-x, ties.method = "min")),
                       total_rank_int = ave(total, 
-                                           cancer_data, 
+                                           cancer, 
+                                           cluster,
                                            FUN = function(x) rank(-x, ties.method = "min")),
-                      pval_rank = ave(pval, 
-                                      cancer_data, 
+                      pval_rank_int = ave(pval, 
+                                      cancer, 
+                                      cluster,
                                       FUN = function(x) rank(-x, ties.method = "min")))
     
   } else {
     
     data <- transform(data, 
-                      total_rank_union = ave(total, 
-                                             cancer_data, 
+                      pval_ci_rank_union = ave(total, 
+                                             cancer, 
+                                             cluster,
                                              FUN = function(x) rank(-x, ties.method = "min")),
                       pval_rank_union = ave(pval, 
-                                            cancer_data, 
+                                            cancer,
+                                            cluster,
                                             FUN = function(x) rank(-x, ties.method = "min")))
   }
   
@@ -95,25 +87,26 @@ rm(testScores, testScoresOrig)
 ## Create data frame that has counts for number of time method is in same quintile in intersection and union 
 
 # first paste cancer and method together 
-int_rank$cancer_method_data <- paste0(int_rank$cancer_data,'_', int_rank$method)
-union_rank$cancer_method_data <- paste0(union_rank$cancer_data,'_', union_rank$method)
+int_rank$cancer_method_cluster <- paste0(int_rank$cancer,'_', int_rank$method, '_', int_rank$cluster)
+union_rank$cancer_method_cluster <- paste0(union_rank$cancer,'_', union_rank$method, '_', union_rank$cluster)
 
 # left join on cancer_method 
 dat <- left_join(int_rank, 
                  union_rank, 
-                 by = 'cancer_method_data')
+                 by = 'cancer_method_cluster')
 
 # remove unnecessary columns 
-dat <- dat[, c('cancer_method_data',
-               'cancer.x',
+dat <- dat[, c('cancer.x', 
                'method.x',
-               'type.x',
-               'pval_rank',
+               'cluster.x',
+               'cancer_method_cluster',
+               'pval_rank_int',
                'pval_rank_union',
-               'pval_ci_rank', 
-               'acc_nmi_rank', 
-               'total_rank_int', 
-               'total_rank_union')]
+               'pval_ci_rank_int', 
+               'pval_ci_rank_union',
+               'acc_nmi_rank_int', 
+               'total_rank_int')]
+
 #############################################################################################
 ## check if method is in within 1 place (up or down) in both int and union 
 
@@ -121,13 +114,13 @@ dat <- dat[, c('cancer_method_data',
 dat$total <- NA
 for (i in 1:nrow(dat)) {
   
-  if (dat$total_rank_int[i] == dat$total_rank_union[i]) {
+  if (dat$total_rank_int[i] == dat$pval_ci_rank_union[i]) {
     dat$total[i] <- TRUE
     
-  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$total_rank_int[i] - dat$pval_ci_rank_union[i]) == 1) {
     dat$total[i] <- TRUE
     
-  } else if (abs(dat$total_rank_int[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$total_rank_int[i] - dat$pval_ci_rank_union[i]) > 1) {
     dat$total[i] <- FALSE
   }
   
@@ -137,13 +130,13 @@ for (i in 1:nrow(dat)) {
 dat$total_acc_nmi <- NA
 for (i in 1:nrow(dat)) {
   
-  if (dat$acc_nmi_rank[i] == dat$total_rank_union[i]) {
+  if (dat$acc_nmi_rank_int[i] == dat$pval_ci_rank_union[i]) {
     dat$total_acc_nmi[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$acc_nmi_rank_int[i] - dat$pval_ci_rank_union[i]) == 1) {
     dat$total_acc_nmi[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$acc_nmi_rank_int[i] - dat$pval_ci_rank_union[i]) > 1) {
     dat$total_acc_nmi[i] <- FALSE
   }
   
@@ -154,58 +147,42 @@ for (i in 1:nrow(dat)) {
 dat$total_pval_ci <- NA
 for (i in 1:nrow(dat)) {
   
-  if (dat$pval_ci_rank[i] == dat$total_rank_union[i]) {
+  if (dat$pval_ci_rank_int[i] == dat$pval_ci_rank_union[i]) {
     dat$total_pval_ci[i] <- TRUE
     
-  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) == 1) {
+  } else if (abs(dat$pval_ci_rank_int[i] - dat$pval_ci_rank_union[i]) == 1) {
     dat$total_pval_ci[i] <- TRUE
     
-  } else if (abs(dat$pval_ci_rank[i] - dat$total_rank_union[i]) > 1) {
+  } else if (abs(dat$pval_ci_rank_int[i] - dat$pval_ci_rank_union[i]) > 1) {
     dat$total_pval_ci[i] <- FALSE
   }
-  
 }
 
 # for individual pval score of intersection and total union
 dat$total_pval <- NA
 for (i in 1:nrow(dat)) {
   
-  if (dat$pval_rank[i] == dat$pval_rank_union[i]) {
+  if (dat$pval_rank_int[i] == dat$pval_rank_union[i]) {
     dat$total_pval[i] <- TRUE
     
-  } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) == 1) {
+  } else if (abs(dat$pval_rank_int[i] - dat$pval_rank_union[i]) == 1 ||
+             abs(dat$pval_rank_int[i] - dat$pval_rank_union[i]) == 2) {
     dat$total_pval[i] <- TRUE
     
-  } else if (abs(dat$pval_rank[i] - dat$pval_rank_union[i]) > 1) {
+  } else if (abs(dat$pval_rank_int[i] - dat$pval_rank_union[i]) > 2) {
     dat$total_pval[i] <- FALSE
   }
   
 }
 
+
 ###############################################################################################
-# group by cancer_method_data 
-dat_counts_all <- dat %>% group_by(cancer.x, type.x) %>% summarise(total = sum(total == TRUE),
+# group by cancer 
+dat_counts <- dat %>% group_by(cancer.x,method.x) %>% summarise(total = sum(total == TRUE),
                                                        total_acc_nmi = sum(total_acc_nmi == TRUE),
                                                        total_pval_ci = sum(total_pval_ci == TRUE),
                                                        total_pval = sum(total_pval == TRUE))
 
-# group by cancer 
-dat_counts_cancer <- dat %>% group_by(cancer.x) %>% summarise(total = sum(total == TRUE),
-                                                                      total_acc_nmi = sum(total_acc_nmi == TRUE),
-                                                                      total_pval_ci = sum(total_pval_ci == TRUE),
-                                                                      total_pval = sum(total_pval == TRUE))
-
-# group by data type 
-dat_counts_data <- dat %>% group_by(type.x) %>% summarise(total = sum(total == TRUE),
-                                                                 total_acc_nmi = sum(total_acc_nmi == TRUE),
-                                                                 total_pval_ci = sum(total_pval_ci == TRUE),
-                                                                 total_pval = sum(total_pval == TRUE))
-
-# group by method #USE THIS
-dat_counts_method <- dat %>% group_by(method.x) %>% summarise(total = sum(total == TRUE),
-                                                                      total_acc_nmi = sum(total_acc_nmi == TRUE),
-                                                                      total_pval_ci = sum(total_pval_ci == TRUE),
-                                                                      total_pval = sum(total_pval == TRUE))
 
 
 ##############################################################################################
@@ -215,13 +192,14 @@ dat_counts_method <- dat %>% group_by(method.x) %>% summarise(total = sum(total 
 dat$acc_pval <- NA
 for (i in 1:nrow(dat)) {
   
-  if (dat$acc_nmi_rank[i] == dat$pval_ci_rank[i]) {
+  if (dat$acc_nmi_rank_int[i] == dat$pval_ci_rank_int[i]) {
     dat$acc_pval[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) == 1) {
+  } else if (abs(dat$acc_nmi_rank_int[i] - dat$pval_ci_rank_int[i]) == 2 ||
+             abs(dat$acc_nmi_rank_int[i] - dat$pval_ci_rank_int[i]) == 1) {
     dat$acc_pval[i] <- TRUE
     
-  } else if (abs(dat$acc_nmi_rank[i] - dat$pval_ci_rank[i]) > 1) {
+  } else if (abs(dat$acc_nmi_rank_int[i] - dat$pval_ci_rank_int[i]) > 2) {
     dat$acc_pval[i] <- FALSE
   }
   
@@ -229,8 +207,6 @@ for (i in 1:nrow(dat)) {
 
 ###############################################################################################
 # group by cancer 
-dat_counts_all <- dat %>% group_by(cancer.x, type.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
-dat_counts_cancer <- dat %>% group_by(cancer.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
-# USE THIS
-dat_counts_data <- dat %>% group_by(type.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
-dat_counts_method <- dat %>% group_by(method.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+dat_counts <- dat %>% group_by(cancer.x, cluster.x) %>% summarise(acc_pval = sum(acc_pval == TRUE))
+
+
