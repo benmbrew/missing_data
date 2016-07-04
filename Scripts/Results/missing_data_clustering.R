@@ -63,14 +63,18 @@ rankMethods <- function(data, complete) {
                                              cancer,
                                              cluster,
                                              FUN = function(x) rank(-x, ties.method = "min")),
+                      acc_rank_int = ave(acc, 
+                                             cancer,
+                                             cluster,
+                                             FUN = function(x) rank(-x, ties.method = "min")),
+                      nmi_rank_int = ave(nmi, 
+                                         cancer,
+                                         cluster,
+                                         FUN = function(x) rank(-x, ties.method = "min")),
                       pval_ci_rank_int = ave(pval_ci, 
                                              cancer, 
                                              cluster,
                                              FUN = function(x) rank(-x, ties.method = "min")),
-                      total_rank_int = ave(total, 
-                                           cancer, 
-                                           cluster,
-                                           FUN = function(x) rank(-x, ties.method = "min")),
                       pval_rank_int = ave(pval, 
                                           cancer, 
                                           cluster,
@@ -131,6 +135,45 @@ union_final <- rbind(brca_union, kirc_union, lihc_union, luad_union, lusc_union)
 # group by method, get raning for acc_nmi
 top_int_acc <- int_final %>%
   group_by(method) %>%
+  summarise(rank1 = sum(acc_rank_int == 1),
+            rank2 = sum(acc_rank_int == 2),
+            rank3 = sum(acc_rank_int == 3),
+            rank4 = sum(acc_rank_int == 4),
+            rank5 = sum(acc_rank_int == 5),
+            rank6 = sum(acc_rank_int == 6),
+            rank7 = sum(acc_rank_int == 7))
+
+# melt top_int 
+top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
+
+# plot 
+ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
+  geom_bar(stat = 'identity', alpha = 0.8)  +  xlab('Method') + ylab('') + 
+  ggtitle('Intersection') +
+  scale_fill_manual(values = c("grey8", "grey15", "grey30", "grey45", "grey60", "grey75", "grey90"), 
+                    name="ACC and NMI Ranking",
+                    breaks=c("rank1", "rank2", "rank3", "rank4", "rank5", "rank6", "rank7"),
+                    labels=c("Rank 1", "Rank 2", "Rank 3", "Rank 4", "Rank 5", "Rank 6", "Rank 7")) + 
+  scale_y_continuous(breaks=c(1,2,3,4,5)) +
+  theme(panel.background=element_rect(fill="white"), 
+        plot.background=element_rect(fill="white"), 
+        panel.border = element_rect(fill = NA, colour = 'grey50'),
+        panel.grid.major=element_line(colour="grey50",size=0.2, linetype = 'dashed'), axis.ticks=element_blank(),
+        legend.position="right", #legend.title = element_blank(), 
+        legend.background = element_rect(fill="#F0F0F0"),
+        plot.title=element_text(face="bold",hjust=0,vjust=2,colour="#535353",size=15),
+        axis.text.x=element_text(size=11,colour="#535353",face="bold", angle = 45, hjust = 1),
+        axis.text.y=element_text(size=11,colour="#535353",face="bold"),
+        axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5),
+        axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5),
+        plot.margin = unit(c(1, 1, .5, .7), "cm")) + geom_hline(yintercept=0)
+
+
+#### METHOD
+
+# group by method, get raning for acc_nmi
+top_int_acc_nmi <- int_final %>%
+  group_by(method) %>%
   summarise(rank1 = sum(acc_nmi_rank_int == 1),
             rank2 = sum(acc_nmi_rank_int == 2),
             rank3 = sum(acc_nmi_rank_int == 3),
@@ -140,10 +183,10 @@ top_int_acc <- int_final %>%
             rank7 = sum(acc_nmi_rank_int == 7))
 
 # melt top_int 
-top_int_acc_melt <- melt(top_int_acc, id.vars = 'method')
+top_int_acc_nmi_melt <- melt(top_int_acc_nmi, id.vars = 'method')
 
 # plot 
-ggplot(data = top_int_acc_melt, aes(reorder(method, -value), value, fill = variable)) +
+ggplot(data = top_int_acc_nmi_melt, aes(reorder(method, -value), value, fill = variable)) +
   geom_bar(stat = 'identity', alpha = 0.8)  +  xlab('Method') + ylab('') + 
   ggtitle('Intersection') +
   scale_fill_manual(values = c("grey8", "grey15", "grey30", "grey45", "grey60", "grey75", "grey90"), 
