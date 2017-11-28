@@ -1,0 +1,150 @@
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Cluster size 41944 broken into 31454 10490 
+Cluster size 31454 broken into 25357 6097 
+Cluster size 25357 broken into 15676 9681 
+Cluster size 15676 broken into 6466 9210 
+Cluster size 6466 broken into 3105 3361 
+Cluster size 3105 broken into 1817 1288 
+Cluster size 1817 broken into 728 1089 
+Done cluster 728 
+Done cluster 1089 
+Done cluster 1817 
+Done cluster 1288 
+Done cluster 3105 
+Cluster size 3361 broken into 2959 402 
+Cluster size 2959 broken into 1120 1839 
+Done cluster 1120 
+Cluster size 1839 broken into 636 1203 
+Done cluster 636 
+Done cluster 1203 
+Done cluster 1839 
+Done cluster 2959 
+Done cluster 402 
+Done cluster 3361 
+Done cluster 6466 
+Cluster size 9210 broken into 4470 4740 
+Cluster size 4470 broken into 3929 541 
+Cluster size 3929 broken into 1666 2263 
+Cluster size 1666 broken into 946 720 
+Done cluster 946 
+Done cluster 720 
+Done cluster 1666 
+Cluster size 2263 broken into 1054 1209 
+Done cluster 1054 
+Done cluster 1209 
+Done cluster 2263 
+Done cluster 3929 
+Done cluster 541 
+Done cluster 4470 
+Cluster size 4740 broken into 2463 2277 
+Cluster size 2463 broken into 1200 1263 
+Done cluster 1200 
+Done cluster 1263 
+Done cluster 2463 
+Cluster size 2277 broken into 1457 820 
+Done cluster 1457 
+Done cluster 820 
+Done cluster 2277 
+Done cluster 4740 
+Done cluster 9210 
+Done cluster 15676 
+Cluster size 9681 broken into 5167 4514 
+Cluster size 5167 broken into 2978 2189 
+Cluster size 2978 broken into 1631 1347 
+Cluster size 1631 broken into 985 646 
+Done cluster 985 
+Done cluster 646 
+Done cluster 1631 
+Done cluster 1347 
+Done cluster 2978 
+Cluster size 2189 broken into 1025 1164 
+Done cluster 1025 
+Done cluster 1164 
+Done cluster 2189 
+Done cluster 5167 
+Cluster size 4514 broken into 1953 2561 
+Cluster size 1953 broken into 1030 923 
+Done cluster 1030 
+Done cluster 923 
+Done cluster 1953 
+Cluster size 2561 broken into 886 1675 
+Done cluster 886 
+Cluster size 1675 broken into 777 898 
+Done cluster 777 
+Done cluster 898 
+Done cluster 1675 
+Done cluster 2561 
+Done cluster 4514 
+Done cluster 9681 
+Done cluster 25357 
+Cluster size 6097 broken into 3245 2852 
+Cluster size 3245 broken into 1940 1305 
+Cluster size 1940 broken into 1036 904 
+Done cluster 1036 
+Done cluster 904 
+Done cluster 1940 
+Done cluster 1305 
+Done cluster 3245 
+Cluster size 2852 broken into 1969 883 
+Cluster size 1969 broken into 908 1061 
+Done cluster 908 
+Done cluster 1061 
+Done cluster 1969 
+Done cluster 883 
+Done cluster 2852 
+Done cluster 6097 
+Done cluster 31454 
+Cluster size 10490 broken into 4721 5769 
+Cluster size 4721 broken into 2083 2638 
+Cluster size 2083 broken into 1106 977 
+Done cluster 1106 
+Done cluster 977 
+Done cluster 2083 
+Cluster size 2638 broken into 1130 1508 
+Done cluster 1130 
+Cluster size 1508 broken into 997 511 
+Done cluster 997 
+Done cluster 511 
+Done cluster 1508 
+Done cluster 2638 
+Done cluster 4721 
+Cluster size 5769 broken into 3094 2675 
+Cluster size 3094 broken into 1548 1546 
+Cluster size 1548 broken into 727 821 
+Done cluster 727 
+Done cluster 821 
+Done cluster 1548 
+Cluster size 1546 broken into 859 687 
+Done cluster 859 
+Done cluster 687 
+Done cluster 1546 
+Done cluster 3094 
+Cluster size 2675 broken into 1333 1342 
+Done cluster 1333 
+Done cluster 1342 
+Done cluster 2675 
+Done cluster 5769 
+Done cluster 10490 

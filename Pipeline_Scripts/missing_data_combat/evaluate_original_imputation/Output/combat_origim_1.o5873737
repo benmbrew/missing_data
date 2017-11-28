@@ -1,0 +1,22 @@
+Found 2 batches
+Found 0  categorical covariate(s)
+Found 4580166 Missing Data Values
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Cluster size 4843 broken into 2741 2102 
+Cluster size 2741 broken into 2365 376 
+Cluster size 2365 broken into 765 1600 
+Done cluster 765 
+Cluster size 1600 broken into 907 693 
+Done cluster 907 
+Done cluster 693 
+Done cluster 1600 
+Done cluster 2365 
+Done cluster 376 
+Done cluster 2741 
+Cluster size 2102 broken into 1153 949 
+Done cluster 1153 
+Done cluster 949 
+Done cluster 2102 

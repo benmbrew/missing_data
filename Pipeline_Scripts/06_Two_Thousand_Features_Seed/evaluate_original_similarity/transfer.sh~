@@ -1,0 +1,20 @@
+#!/bin/bash
+
+home=/home/benbrew/hpf/largeprojects/agoldenb/ben
+project=${home}/Projects/SNF/NM_2015
+test=${project}/Scripts/06_Two_Thousand_Features_Seed/evaluate_original_similarity
+results=${test}/Results
+
+# Clear output from previous runs
+# rm ${test}/Results/*.txt
+
+# Run the jobs
+for i in {1..5}; do # Data Set
+  for j in {0..49}; do # Imputation Method
+  cat "${results}/Similarity/${i}_${j}.txt" >> "${results}/similarity.txt"
+done
+done
+
+
+
+

@@ -1,0 +1,22 @@
+Loading required package: parallel
+Loading required package: mgcv
+Loading required package: nlme
+This is mgcv 1.8-10. For overview type 'help("mgcv-package")'.
+Loading required package: genefilter
+
+Attaching package: 'genefilter'
+
+The following object is masked from 'package:SNFtool':
+
+    dist2
+
+The following object is masked from 'package:base':
+
+    anyNA
+
+Warning message:
+In write.table(concatenatedIncompleteData, incompleteFile, col.names = TRUE,  :
+  appending column names to file
+Read 304 items
+Read 304 items
+Read 304 items

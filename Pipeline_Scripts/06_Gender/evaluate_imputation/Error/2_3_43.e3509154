@@ -1,0 +1,7 @@
+Loading required package: parallel
+Warning message:
+In write.table(concatenatedIncompleteData, incompleteFile, col.names = TRUE,  :
+  appending column names to file
+Read 110 items
+Read 110 items
+Read 110 items

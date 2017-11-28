@@ -1,0 +1,4 @@
+OpenJDK 64-Bit Server VM warning: Insufficient space for shared memory file:
+   /tmp/hsperfdata_benmbrew/142181
+Try using the -Djava.io.tmpdir= option to select an alternate temp location.
+

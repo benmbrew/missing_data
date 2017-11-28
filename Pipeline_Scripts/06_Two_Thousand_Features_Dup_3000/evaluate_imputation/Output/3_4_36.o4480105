@@ -1,0 +1,18 @@
+Cluster size 6846 broken into 4158 2688 
+Cluster size 4158 broken into 2987 1171 
+Cluster size 2987 broken into 1435 1552 
+Done cluster 1435 
+Cluster size 1552 broken into 284 1268 
+Done cluster 284 
+Done cluster 1268 
+Done cluster 1552 
+Done cluster 2987 
+Done cluster 1171 
+Done cluster 4158 
+Cluster size 2688 broken into 1488 1200 
+Done cluster 1488 
+Done cluster 1200 
+Done cluster 2688 
+35  points of lambdas are used to tune parameters.
+Begin parallel computation
+End parallel computation

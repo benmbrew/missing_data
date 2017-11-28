@@ -1,0 +1,2 @@
+mkdir: cannot create directory `/localhd/4481367': Input/output error
+chown: cannot access `/localhd/4481367': No such file or directory

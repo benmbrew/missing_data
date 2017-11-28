@@ -1,0 +1,156 @@
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Cluster size 41944 broken into 31226 10718 
+Cluster size 31226 broken into 24459 6767 
+Cluster size 24459 broken into 15131 9328 
+Cluster size 15131 broken into 6307 8824 
+Cluster size 6307 broken into 2487 3820 
+Cluster size 2487 broken into 936 1551 
+Done cluster 936 
+Cluster size 1551 broken into 1536 15 
+Cluster size 1536 broken into 721 815 
+Done cluster 721 
+Done cluster 815 
+Done cluster 1536 
+Done cluster 15 
+Done cluster 1551 
+Done cluster 2487 
+Cluster size 3820 broken into 2003 1817 
+Cluster size 2003 broken into 601 1402 
+Done cluster 601 
+Done cluster 1402 
+Done cluster 2003 
+Cluster size 1817 broken into 763 1054 
+Done cluster 763 
+Done cluster 1054 
+Done cluster 1817 
+Done cluster 3820 
+Done cluster 6307 
+Cluster size 8824 broken into 6072 2752 
+Cluster size 6072 broken into 2965 3107 
+Cluster size 2965 broken into 1501 1464 
+Cluster size 1501 broken into 814 687 
+Done cluster 814 
+Done cluster 687 
+Done cluster 1501 
+Done cluster 1464 
+Done cluster 2965 
+Cluster size 3107 broken into 1878 1229 
+Cluster size 1878 broken into 766 1112 
+Done cluster 766 
+Done cluster 1112 
+Done cluster 1878 
+Done cluster 1229 
+Done cluster 3107 
+Done cluster 6072 
+Cluster size 2752 broken into 1811 941 
+Cluster size 1811 broken into 1463 348 
+Done cluster 1463 
+Done cluster 348 
+Done cluster 1811 
+Done cluster 941 
+Done cluster 2752 
+Done cluster 8824 
+Done cluster 15131 
+Cluster size 9328 broken into 5802 3526 
+Cluster size 5802 broken into 5479 323 
+Cluster size 5479 broken into 2812 2667 
+Cluster size 2812 broken into 1511 1301 
+Cluster size 1511 broken into 474 1037 
+Done cluster 474 
+Done cluster 1037 
+Done cluster 1511 
+Done cluster 1301 
+Done cluster 2812 
+Cluster size 2667 broken into 1042 1625 
+Done cluster 1042 
+Cluster size 1625 broken into 839 786 
+Done cluster 839 
+Done cluster 786 
+Done cluster 1625 
+Done cluster 2667 
+Done cluster 5479 
+Done cluster 323 
+Done cluster 5802 
+Cluster size 3526 broken into 1587 1939 
+Cluster size 1587 broken into 1211 376 
+Done cluster 1211 
+Done cluster 376 
+Done cluster 1587 
+Cluster size 1939 broken into 624 1315 
+Done cluster 624 
+Done cluster 1315 
+Done cluster 1939 
+Done cluster 3526 
+Done cluster 9328 
+Done cluster 24459 
+Cluster size 6767 broken into 3455 3312 
+Cluster size 3455 broken into 2061 1394 
+Cluster size 2061 broken into 810 1251 
+Done cluster 810 
+Done cluster 1251 
+Done cluster 2061 
+Done cluster 1394 
+Done cluster 3455 
+Cluster size 3312 broken into 1855 1457 
+Cluster size 1855 broken into 568 1287 
+Done cluster 568 
+Done cluster 1287 
+Done cluster 1855 
+Done cluster 1457 
+Done cluster 3312 
+Done cluster 6767 
+Done cluster 31226 
+Cluster size 10718 broken into 6325 4393 
+Cluster size 6325 broken into 2897 3428 
+Cluster size 2897 broken into 1870 1027 
+Cluster size 1870 broken into 860 1010 
+Done cluster 860 
+Done cluster 1010 
+Done cluster 1870 
+Done cluster 1027 
+Done cluster 2897 
+Cluster size 3428 broken into 1194 2234 
+Done cluster 1194 
+Cluster size 2234 broken into 1438 796 
+Done cluster 1438 
+Done cluster 796 
+Done cluster 2234 
+Done cluster 3428 
+Done cluster 6325 
+Cluster size 4393 broken into 2574 1819 
+Cluster size 2574 broken into 1527 1047 
+Cluster size 1527 broken into 604 923 
+Done cluster 604 
+Done cluster 923 
+Done cluster 1527 
+Done cluster 1047 
+Done cluster 2574 
+Cluster size 1819 broken into 1038 781 
+Done cluster 1038 
+Done cluster 781 
+Done cluster 1819 
+Done cluster 4393 
+Done cluster 10718 

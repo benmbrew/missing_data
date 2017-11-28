@@ -1,0 +1,5 @@
+Loading required package: parallel
+Error in cat("xxx", "\t", file = incompleteFile, sep = "") : 
+  object 'incompleteFile' not found
+Calls: impute -> <Anonymous> -> cat
+Execution halted

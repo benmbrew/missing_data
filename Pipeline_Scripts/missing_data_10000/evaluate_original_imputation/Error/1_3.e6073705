@@ -1,0 +1,5 @@
+Loading required package: parallel
+Error: unexpected symbol in:
+"  for (v in 1:numViews) {
+     Calculate the"
+Execution halted

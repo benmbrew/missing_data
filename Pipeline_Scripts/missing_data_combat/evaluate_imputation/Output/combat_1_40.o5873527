@@ -1,0 +1,39 @@
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Cluster size 4814 broken into 2561 2253 
+Cluster size 2561 broken into 2053 508 
+Cluster size 2053 broken into 984 1069 
+Done cluster 984 
+Done cluster 1069 
+Done cluster 2053 
+Done cluster 508 
+Done cluster 2561 
+Cluster size 2253 broken into 415 1838 
+Done cluster 415 
+Cluster size 1838 broken into 956 882 
+Done cluster 956 
+Done cluster 882 
+Done cluster 1838 
+Done cluster 2253 

@@ -1,0 +1,7 @@
+Loading required package: parallel
+Read 194 items
+Read 194 items
+Read 194 items
+Warning message:
+In fitter(X, Y, strats, offset, init, control, weights = weights,  :
+  Loglik converged before variable  1 ; beta may be infinite. 

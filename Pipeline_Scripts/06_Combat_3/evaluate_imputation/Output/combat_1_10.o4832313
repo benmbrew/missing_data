@@ -1,0 +1,45 @@
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Found 2 batches
+Found 0  categorical covariate(s)
+Standardizing Data across genes
+Fitting L/S model and finding priors
+Finding parametric adjustments
+Adjusting the Data
+Cluster size 4814 broken into 2502 2312 
+Cluster size 2502 broken into 1525 977 
+Cluster size 1525 broken into 525 1000 
+Done cluster 525 
+Done cluster 1000 
+Done cluster 1525 
+Done cluster 977 
+Done cluster 2502 
+Cluster size 2312 broken into 739 1573 
+Done cluster 739 
+Cluster size 1573 broken into 1035 538 
+Done cluster 1035 
+Done cluster 538 
+Done cluster 1573 
+Done cluster 2312 
+35  points of lambdas are used to tune parameters.
+Begin parallel computation
+End parallel computation
+35  points of lambdas are used to tune parameters.
+Begin parallel computation
+End parallel computation
