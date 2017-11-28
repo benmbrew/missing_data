@@ -139,6 +139,7 @@ clinicalData <- clinicalData[!duplicated(clinicalData$bcr_patient_barcode),]
 # controls.
 
 featureSubsetIndices <- function(cases, subsetSize=numFeat) {
+  
   numViews <- length(cases)
   featureSubsetInd <- vector("list", numViews)
   
@@ -242,6 +243,7 @@ for (i in 1:length(clusteringMethods)) {
                                                 sampleRows)
   
   for (j in 1:length(clusteringData)) {
+    
     data <- clusteringData[[j]]
     tcgaID <- function(x) colnames(x[[1]])
     dataInd <- match(tcgaID(data), tcgaID(imputedData))
