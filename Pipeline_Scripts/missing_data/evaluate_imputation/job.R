@@ -14,10 +14,10 @@ library(survival)
 
 ######################################################################
 # Initialize folders
-homeFolder <- "~/hpf/largeprojects/agoldenb/ben"
+homeFolder <- "/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
 testFolder <- paste(projectFolder, "Scripts",
-                    "missing_data",
+                    "Missing_Data",
                     "evaluate_imputation", sep="/")
 resultsFolder <- paste(testFolder, "Results", sep="/")
 
@@ -26,7 +26,6 @@ resultsFolder <- paste(testFolder, "Results", sep="/")
 jvmGBLimit <- 8
 cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
-clusters <- c(1,2,3,4,5)
 numCores <- 12
 numFeat <- 2000
 
@@ -36,8 +35,8 @@ cancer <- cancerTypes[argv[1]]
 cancerInd <- argv[1]
 # Imputation method
 runType <- argv[2]
+# Seed for generating incomplete data
 seed <- argv[3]
-
 
 # Store the output in subfolders
 resultsFile <- paste(paste(argv, collapse="_"), ".txt", sep="")
@@ -129,8 +128,6 @@ removeNASamples <- function(data) {
   data <- data[, !missingInd]
   return(data)
 }
-removedNAData <- lapply(incompleteData, removeNASamples)
-intersectedData <- columnIntersection(removedNAData)
 
 ######################################################################
 # Select a subset of features which differ most between cases and
@@ -171,12 +168,6 @@ incompleteInd <- featureSubsetIndices(incompleteData)
 incompleteData <- subsetData(incompleteData, incompleteInd)
 removedData <- subsetData(removedData, incompleteInd)
 
-intersectedInd <- featureSubsetIndices(intersectedData)
-intersectedData <- subsetData(intersectedData, intersectedInd)
-
-
-methyl <- completeData[[1]]
-
 ######################################################################
 # Normalize the features in the data sets.
 # Normalization is performed before imputation and we expect that the
@@ -210,20 +201,17 @@ normalizeData <- function(data, stat) {
 completeStat <- rowStatistics(completeData)
 completeData <- normalizeData(completeData, completeStat)
 
-methyl_new <- completeData[[1]]
-
 incompleteStat <- rowStatistics(incompleteData)
 incompleteData <- normalizeData(incompleteData, incompleteStat)
 removedData <- normalizeData(removedData, incompleteStat)
 
-intersectedStat <- rowStatistics(intersectedData)
-intersectedData <- normalizeData(intersectedData, intersectedStat)
 
 ######################################################################
 # Evaluate the performance of the methods
 
 sampleRows <- FALSE
-
+clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+                       SNFClustering)
 imputationMethods <- c(knnImputation, llsImputation, lsaImputation,
                        randomImputation)
 
@@ -235,9 +223,10 @@ imputedData <- imputationOutput$imputedData
 imputationResults <- imputationOutput$results
 writeResults(c(argv, imputationResults), imputationFile)
 
-# Save the results of clustering the imputed and intersected data
+clusteringData <- list(imputedData)
 
-for (i in 1:length(clusters)) {
+# Save the results of clustering the imputed and intersected data
+for (i in 1:length(clusteringMethods)) {
   # Read in the cluster labels for the complete data
   fileName <- paste(cancerInd, "_", i, ".txt", sep="")
   filePath <- paste(testFolder, "../cluster_complete_data",
@@ -246,17 +235,16 @@ for (i in 1:length(clusters)) {
   
   # Initialize clustering function
   numClus <- length(unique(completeLabels))
-  cluster <- function(x) SNFClustering(x, numClus, sampleRows)
+  cluster <- function(x) clusteringMethods[[i]](x, numClus,
+                                                sampleRows)
   
-  data <- imputedData
-  tcgaID <- function(x) colnames(x[[1]])
-  dataInd <- match(tcgaID(data), tcgaID(completeData))
-  clusteringResults <- evaluateClustering(cluster, data,
+  for (j in 1:length(clusteringData)) {
+    data <- clusteringData[[j]]
+    tcgaID <- function(x) colnames(x[[1]])
+    dataInd <- match(tcgaID(data), tcgaID(completeData))
+    clusteringResults <- evaluateClustering(cluster, data,
                                             completeLabels[dataInd],
                                             clinicalData[dataInd, ])
-  writeResults(c(argv, i, clusteringResults), clusteringFile)
-
+    writeResults(c(argv, i, j, clusteringResults), clusteringFile)
+  }
 }
-
-
-

@@ -102,4 +102,5 @@ ggplot(dat, aes(date, cumulative)) + geom_line(size = 0.6) +
 
 
 
-
+source("https://bioconductor.org/biocLite.R")
+biocLite("minfi")

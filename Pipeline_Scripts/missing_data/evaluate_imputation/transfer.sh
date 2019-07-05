@@ -2,7 +2,7 @@
 
 home=/home/benbrew/hpf/largeprojects/agoldenb/ben
 project=${home}/Projects/SNF/NM_2015
-test=${project}/Scripts/missing_data/evaluate_imputation
+test=${project}/Scripts/Missing_Data/evaluate_imputation
 results=${test}/Results
 
 # Clear output from previous runs

@@ -16,7 +16,7 @@ library(survival)
 homeFolder <- "/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
 testFolder <- paste(projectFolder, "Scripts",
-                    "missing_data",
+                    "Missing_Data",
                     "evaluate_original_similarity", sep="/")
 resultsFolder <- paste(testFolder, "Results", sep="/")
 
@@ -24,7 +24,6 @@ resultsFolder <- paste(testFolder, "Results", sep="/")
 # Initialize fixed variables
 cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
-clusters <- c(1,2,3,4,5)
 numCores <- 1
 numFeat <- 2000
 
@@ -191,33 +190,31 @@ sampleRows <- FALSE
 similarityMethods <- c(selfSimilarity, medianSimilarity,
                        regressionSimilarity)
 
-similarityData <- unionData
+similarityData <- list(unionData)
 
-for (i in 1:length(clusters)){
-    # Read in the cluster labels for the complete data
-    fileName <- paste(cancerInd, "_", i, ".txt", sep="")
-    filePath <- paste(testFolder, "../cluster_complete_data",
-                    "Results/Labels", fileName, sep="/")
-    completeLabels <- scan(filePath)
-    
-    # Extend the completeLabels
-    nSamples <- ncol(unionData[[1]])
-    repTimes <- ceiling(nSamples/length(completeLabels))
-    completeLabels <- rep.int(completeLabels, repTimes)[1:nSamples]
+# Read in the cluster labels for the complete data
+fileName <- paste(cancerInd, "_3.txt", sep="")
+filePath <- paste(testFolder, "../cluster_complete_data",
+                  "Results/Labels", fileName, sep="/")
+completeLabels <- scan(filePath)
 
+# Extend the completeLabels
+nSamples <- ncol(unionData[[1]])
+repTimes <- ceiling(nSamples/length(completeLabels))
+completeLabels <- rep.int(completeLabels, repTimes)[1:nSamples]
 
 # Save the results of clustering the union and intersected data
-  for (j in 1:length(similarityMethods)) {
-      similarity <- similarityMethods[[j]]
-    
-      data <- similarityData
-      tcgaID <- function(x) colnames(x[[1]])
-      dataInd <- match(tcgaID(data), tcgaID(unionData))
-      similarityResults <- evaluateSimilarity(similarity, data,
-                                              completeLabels[dataInd],
-                                              clinicalData[dataInd, ],
-                                              sampleRows)
-      writeResults(c(argv, j, i, similarityResults), similarityFile)
+for (i in 1:length(similarityMethods)) {
+  similarity <- similarityMethods[[i]]
+  
+  for (j in 1:length(similarityData)) {
+    data <- similarityData[[j]]
+    tcgaID <- function(x) colnames(x[[1]])
+    dataInd <- match(tcgaID(data), tcgaID(unionData))
+    similarityResults <- evaluateSimilarity(similarity, data,
+                                            completeLabels[dataInd],
+                                            clinicalData[dataInd, ],
+                                            sampleRows)
+    writeResults(c(argv, i, j, similarityResults), similarityFile)
   }
 }
-

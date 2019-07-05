@@ -11,13 +11,12 @@ library(iClusterPlus)
 
 ######################################################################
 # Initialize folders
-homeFolder <- "/hpf/largeprojects/agoldenb/daniel"
-projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
-testFolder <- paste(projectFolder, "Scripts",
-                    "06_Two_Thousand_Features", 
-                    "cluster_complete_data", sep="/")
-resultsFolder <- paste(testFolder, "Results", sep="/")
-labelsFolder <- paste(resultsFolder, "Labels", sep="/")
+homeFolder <- "/home/ben/Documents"
+projectFolder <- paste0(homeFolder, "/missing_data")
+testFolder <- paste0(projectFolder, "/Pipeline_Scripts")
+dataFolder <- paste0(projectFolder, '/Data')
+resultsFolder <- paste0(testFolder, "Results", sep="/")
+
 
 ######################################################################
 # Initialize fixed variables
@@ -31,6 +30,7 @@ numFeat <- 2000
 # Data set which will be tested
 cancer <- cancerTypes[argv[1]]
 numClus <- clusterSizes[argv[1]]
+cancer <- 'KIRC'
 
 ######################################################################
 # Load functions
@@ -40,7 +40,7 @@ numClus <- clusterSizes[argv[1]]
 # -imputedFile, incompleteFile, projectFolder, jvmGBLimit
 # iClusterClustering:
 # -numCores
-source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
+source(paste(projectFolder, "Pipeline_Scripts/loadFunctions.R", sep="/"))
 
 ######################################################################
 # Load the original data

@@ -3,20 +3,18 @@
 library(dplyr)
 
 # Initialize folders
-homeFolder <- "/home/benbrew/hpf/largeprojects/agoldenb/ben"
-projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
-testFolder <- paste(projectFolder, "Scripts",
-                    "06_Two_Thousand_Features",
-                    "evaluate_original_imputation", sep="/")
-dataFolder <- paste(projectFolder, 'Scripts')
-resultsFolder <- paste(testFolder, "Results", sep="/")
+homeFolder <- "/home/ben/Documents"
+projectFolder <- paste0(homeFolder, "/missing_data")
+testFolder <- paste0(projectFolder, "/Pipeline_Scripts")
+dataFolder <- paste0(projectFolder, '/Data')
+resultsFolder <- paste0(testFolder, "Results", sep="/")
 
 ######################################################################
 # Initialize fixed variables
 cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 data_types <- c("methyl", "mirna", "mrna")
 
-source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
+source(paste(projectFolder, "Pipeline_Scripts/loadFunctions.R", sep="/"))
 
 # Load the original data
 load_raw_data <- function(cancer){

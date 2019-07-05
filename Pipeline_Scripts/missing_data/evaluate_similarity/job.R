@@ -2,6 +2,7 @@
 
 # Script to evaluate the how each similarity method affects the
 # performance of the clustering methods
+
 argv <- as.numeric(commandArgs(T))
 
 ######################################################################
@@ -15,7 +16,7 @@ library(survival)
 homeFolder <- "/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
 testFolder <- paste(projectFolder, "Scripts",
-                    "missing_data",
+                    "Missing_Data",
                     "evaluate_similarity", sep="/")
 resultsFolder <- paste(testFolder, "Results", sep="/")
 
@@ -25,16 +26,13 @@ cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
 numCores <- 1
 numFeat <- 2000
-clusters <- c(1,2,3,4,5)
 
 # Initialize variable parameters
 # Data set which will be tested
 cancer <- cancerTypes[argv[1]]
 cancerInd <- argv[1]
-
-seed <- argv[2]
-
 # Seed for generating incomplete data
+seed <- argv[2]
 
 # Store the output in subfolders
 resultsFile <- paste(paste(argv, collapse="_"), ".txt", sep="")
@@ -116,15 +114,6 @@ removedData <- incompleteIntersection$removed
 # Extract all cases which appear in all of the data types in the
 # incomplete data
 
-# Remove samples from the data matrix which only contain NA values.
-removeNASamples <- function(data) {
-  missingInd <- apply(data, 2, function(x) all(is.na(x)))
-  data <- data[, !missingInd]
-  return(data)
-}
-removedNAData <- lapply(incompleteData, removeNASamples)
-intersectedData <- columnIntersection(removedNAData)
-
 ######################################################################
 # Select a subset of features which differ most between cases and
 # controls.
@@ -164,9 +153,6 @@ incompleteInd <- featureSubsetIndices(incompleteData)
 incompleteData <- subsetData(incompleteData, incompleteInd)
 removedData <- subsetData(removedData, incompleteInd)
 
-intersectedInd <- featureSubsetIndices(intersectedData)
-intersectedData <- subsetData(intersectedData, intersectedInd)
-
 ######################################################################
 # Normalize the features in the data sets.
 # Normalization is performed before imputation and we expect that the
@@ -204,36 +190,35 @@ incompleteStat <- rowStatistics(incompleteData)
 incompleteData <- normalizeData(incompleteData, incompleteStat)
 removedData <- normalizeData(removedData, incompleteStat)
 
-intersectedStat <- rowStatistics(intersectedData)
-intersectedData <- normalizeData(intersectedData, intersectedStat)
-
 ######################################################################
 # Evaluate the performance of the similarity methods
 
 sampleRows <- FALSE
-
+clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+                       SNFClustering)
 similarityMethods <- c(selfSimilarity, medianSimilarity,
                        regressionSimilarity)
 
+similarityData <- list(incompleteData)
+
 # Read in the SNF cluster labels for the complete data
-for (i in 1:length(clusters)) { 
-  fileName <- paste(cancerInd,"_", i, ".txt", sep="")
-  filePath <- paste(testFolder, "../cluster_complete_data",
-                    "Results/Labels", fileName, sep="/")
-  completeLabels <- scan(filePath)
+fileName <- paste(cancerInd, "_3.txt", sep="")
+filePath <- paste(testFolder, "../cluster_complete_data",
+                  "Results/Labels", fileName, sep="/")
+completeLabels <- scan(filePath)
+
+# Save the results of clustering the incomplete and intersected data
+for (i in 1:length(similarityMethods)) {
+  similarity <- similarityMethods[[i]]
   
-  # Save the results of clustering the incomplete and intersected data
-  for (j in 1:length(similarityMethods)) {
-    similarity <- similarityMethods[[j]]
-    
-    data <- incompleteData
+  for (j in 1:length(similarityData)) {
+    data <- similarityData[[j]]
     tcgaID <- function(x) colnames(x[[1]])
     dataInd <- match(tcgaID(data), tcgaID(completeData))
     similarityResults <- evaluateSimilarity(similarity, data,
-                                               completeLabels[dataInd],
-                                               clinicalData[dataInd, ],
-                                               sampleRows)
-    writeResults(c(argv, j, i, similarityResults), similarityFile)
+                                            completeLabels[dataInd],
+                                            clinicalData[dataInd, ],
+                                            sampleRows)
+    writeResults(c(argv, i, j, similarityResults), similarityFile)
   }
-  
 }

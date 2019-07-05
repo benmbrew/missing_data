@@ -3,43 +3,34 @@
 # Script to generate and save the cluster labels for the complete data
 
 argv <- as.numeric(commandArgs(T))
-
 ######################################################################
 # Load libraries
 library(SNFtool)
 library(iClusterPlus)
-
 ######################################################################
 # Initialize folders
-homeFolder <- "/hpf/largeprojects/agoldenb/ben"
-projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
-testFolder <- paste(projectFolder, "Scripts",
-                    "missing_data", 
-                    "cluster_complete_data", sep="/")
-resultsFolder <- paste(testFolder, "Results", sep="/")
+homeFolder <- "<ENTER PATH TO cluster_complete_data HERE>"
+resultsFolder <- paste(homeFolder, "Results", sep="/")
 labelsFolder <- paste(resultsFolder, "Labels", sep="/")
-
 ######################################################################
 # Initialize fixed variables
-cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
-clusterSizes <- c(5, 4, 3, 2, 7)
-dataTypes <- c("methyl", "mirna", "mrna")
-numCores <- 35
-numFeat <- 2000
+# Note that cancerTypes and dataTypes should correspond to the name of the data files. 
+# For example, if the data type is mrna and the cancer is BRCA, then the data file should be 
+# BRCA_mrna.txt
+cancerTypes <- "<ENTER NAME OF CANCER HERE>" # for example  c('BRCA', 'KIRC')
+clusterSizes <- "<ENTER SIZE OF CLUSTER HERE" # for example c(4,4)
+dataTypes <- "<ENTER NAME OF DATA TYPES HERE>" # for example c('methyl', 'mirna', 'mrna')
+numCores <- "<ENETER NUMBER OF CORES TO BE USED IN ICLUSTER FUNCTION (RECOMMENDED 35)>" 
+numFeat <- "<CHOOSE NUMBER OF FEATURES TO KEEP (RECOMMENDED 2000)>"
 
 # Initialize variable parameters
 # Data set which will be tested
 cancer <- cancerTypes[argv[1]]
-numClus <- clusterSizes[argv[2]]
+numClus <- clusterSizes[argv[1]]
 
 ######################################################################
 # Load functions
 
-# Note: some functions depend on variables initialized above!
-# lsaImputation:
-# -imputedFile, incompleteFile, projectFolder, jvmGBLimit
-# iClusterClustering:
-# -numCores
 source(paste(projectFolder, "Scripts/loadFunctions.R", sep="/"))
 
 ######################################################################
@@ -138,11 +129,14 @@ completeData <- normalizeData(completeData, completeStat)
 # Generate and save the cluster labels for the complete data
 
 sampleRows <- FALSE
+clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+                       SNFClustering)
 
-cluster <- function(x) SNFClustering(x, numClus,
-                                     sampleRows)
-labels <- cluster(completeData)
-fileName <- paste(paste(argv, collapse="_"), ".txt", sep="")
-filePath <- paste(labelsFolder, fileName, sep="/")
-write(labels, filePath, ncolumns=length(labels))
-
+for (i in 1:length(clusteringMethods)) {
+  cluster <- function(x) clusteringMethods[[i]](x, numClus,
+                                                sampleRows)
+  labels <- cluster(completeData)
+  fileName <- paste(paste(c(argv, i), collapse="_"), ".txt", sep="")
+  filePath <- paste(labelsFolder, fileName, sep="/")
+  write(labels, filePath, ncolumns=length(labels))
+}

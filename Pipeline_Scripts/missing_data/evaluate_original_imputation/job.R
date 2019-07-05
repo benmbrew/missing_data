@@ -17,7 +17,7 @@ library(survival)
 homeFolder <- "/hpf/largeprojects/agoldenb/ben"
 projectFolder <- paste(homeFolder, "Projects/SNF/NM_2015", sep="/")
 testFolder <- paste(projectFolder, "Scripts",
-                    "missing_data",
+                    "Missing_Data",
                     "evaluate_original_imputation", sep="/")
 resultsFolder <- paste(testFolder, "Results", sep="/")
 
@@ -26,7 +26,6 @@ resultsFolder <- paste(testFolder, "Results", sep="/")
 jvmGBLimit <- 8
 cancerTypes <- c("BRCA", "KIRC", "LIHC", "LUAD", "LUSC")
 dataTypes <- c("methyl", "mirna", "mrna")
-clusters <- c(1,2,3,4,5)
 numCores <- 12
 numFeat <- 2000
 
@@ -95,8 +94,25 @@ transformIDFormat <- function(x) {
   return(x)
 }
 
-# Extract all cases which appear in at least one of the data types
+transformUnionId <- function(x) {
+  # Keep the first 12 characters
+  x <- substr(x, 1, 12)
+  
+  return(x)
+}
+
 unionData <- columnUnion(cases)
+
+# Subset the clinical data so that it corresponds to individuals
+# in the union data
+
+for (i in 1:3) {
+  temp.data  <- unionData[[i]]
+  temp.names <- transformUnionId(colnames(temp.data))
+  colnames(temp.data) <- temp.names
+  temp.data <- temp.data[, !duplicated(colnames(temp.data))]
+  unionData[[i]] <- temp.data
+}
 
 # Subset the clinical data so that it corresponds to individuals
 # in the union data
@@ -106,9 +122,6 @@ unionIDs <- transformIDFormat(unionIDs)
 clinicalIDs <- as.character(clinicalData$bcr_patient_barcode)
 clinicalInd <- match(unionIDs, clinicalIDs)
 clinicalData <- clinicalData[clinicalInd, ]
-
-# Extract all cases which appear in all of the data types
-intersectedData <- columnIntersection(cases)
 
 ######################################################################
 # Select a subset of features which differ most between cases and
@@ -145,9 +158,6 @@ subsetData <- function(data, ind) {
 unionInd <- featureSubsetIndices(unionData)
 unionData <- subsetData(unionData, unionInd)
 
-intersectedInd <- featureSubsetIndices(intersectedData)
-intersectedData <- subsetData(intersectedData, intersectedInd)
-
 ######################################################################
 # Normalize the features in the data sets.
 # Normalization is performed before imputation and we expect that the
@@ -168,7 +178,6 @@ rowStatistics <- function(cases) {
   
   return(rowStats)
 }
-
 normalizeData <- function(data, stat) {
   for (v in 1:length(data)) {
     data[[v]] <- (data[[v]] - stat[[v]]$mean) / stat[[v]]$sd
@@ -181,13 +190,12 @@ normalizeData <- function(data, stat) {
 unionStat <- rowStatistics(unionData)
 unionData <- normalizeData(unionData, unionStat)
 
-intersectedStat <- rowStatistics(intersectedData)
-intersectedData <- normalizeData(intersectedData, intersectedStat)
-
 ######################################################################
 # Evaluate the performance of the methods
 
 sampleRows <- FALSE
+clusteringMethods <- c(hierarchicalClustering, iClusterClustering,
+                       SNFClustering)
 imputationMethods <- c(knnImputation, llsImputation, lsaImputation,
                        randomImputation)
 
@@ -195,12 +203,12 @@ imputationMethods <- c(knnImputation, llsImputation, lsaImputation,
 impute <- function(x) imputationMethods[[runType]](x, sampleRows)
 imputedData <- impute(unionData)
 
-clusteringData <- list(imputedData, intersectedData)
+clusteringData <- list(imputedData)
 
 # Save the results of clustering the imputed and intersected data
-for (i in 1:length(clusters)) {
+for (i in 1:length(clusteringMethods)) {
   # Read in the cluster labels for the complete data
-  fileName <- paste(cancerInd, "_", i,".txt", sep="")
+  fileName <- paste(cancerInd, "_", i, ".txt", sep="")
   filePath <- paste(testFolder, "../cluster_complete_data",
                     "Results/Labels", fileName, sep="/")
   completeLabels <- scan(filePath)
@@ -210,17 +218,19 @@ for (i in 1:length(clusters)) {
   repTimes <- ceiling(nSamples/length(completeLabels))
   completeLabels <- rep.int(completeLabels, repTimes)[1:nSamples]
   
-  
   # Initialize clustering function
   numClus <- length(unique(completeLabels))
-  cluster <- function(x) SNFClustering(x, numClus, sampleRows)
-  
-  data <- imputedData
-  tcgaID <- function(x) colnames(x[[1]])
-  dataInd <- match(tcgaID(data), tcgaID(imputedData))
-  clusteringResults <- evaluateClustering(cluster, data,
-                                             completeLabels[dataInd],
-                                             clinicalData[dataInd, ])
-  writeResults(c(argv, i, clusteringResults), clusteringFile)
+  cluster <- function(x) clusteringMethods[[i]](x, numClus,
+                                                sampleRows)
 
+  for (j in 1:length(clusteringData)) {
+    data <- clusteringData[[j]]
+    tcgaID <- function(x) colnames(x[[1]])
+    dataInd <- match(tcgaID(data), tcgaID(imputedData))
+    
+    clusteringResults <- evaluateClustering(cluster, data,
+                                            completeLabels[dataInd],
+                                            clinicalData[dataInd, ])
+    writeResults(c(argv, i, j, clusteringResults), clusteringFile)
+  }
 }
